@@ -8,6 +8,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
@@ -17,8 +18,11 @@
         <Insets top="24.0" right="24.0" bottom="24.0" left="24.0" />
     </padding>
     <top>
-        <VBox spacing="16.0">
-            <Label text="Movie Tracker" style="-fx-font-size: 28px; -fx-font-weight: bold;" />
+        <Label text="Movie Tracker" style="-fx-font-size: 28px; -fx-font-weight: bold;" />
+    </top>
+    <center>
+        <StackPane>
+            <VBox fx:id="searchView" spacing="16.0">
             <HBox spacing="8.0">
                 <TextField fx:id="searchField"
                            HBox.hgrow="ALWAYS"
@@ -26,23 +30,44 @@
                            onAction="#handleSearch" />
                 <Button fx:id="searchButton" text="Search" onAction="#handleSearch" />
             </HBox>
-            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
                 <ProgressIndicator fx:id="loadingIndicator" prefHeight="22.0" prefWidth="22.0" />
                 <Label fx:id="feedbackLabel"
                        text="Enter a movie title or keyword to search."
                        wrapText="true" />
-            </HBox>
-        </VBox>
-    </top>
-    <center>
-        <ScrollPane fitToWidth="true">
-            <content>
-                <VBox fx:id="resultsBox" spacing="10.0">
-                    <padding>
-                        <Insets top="16.0" />
-                    </padding>
-                </VBox>
-            </content>
-        </ScrollPane>
+                </HBox>
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+                    <content>
+                        <VBox fx:id="resultsBox" spacing="10.0" />
+                    </content>
+                </ScrollPane>
+            </VBox>
+            <VBox fx:id="detailsView" spacing="16.0" visible="false" managed="false">
+                <Button fx:id="backButton"
+                        text="Back to search results"
+                        onAction="#handleBackToResults" />
+                <HBox alignment="CENTER_LEFT" spacing="8.0">
+                    <ProgressIndicator fx:id="detailsLoadingIndicator"
+                                       prefHeight="22.0"
+                                       prefWidth="22.0" />
+                    <Label fx:id="detailsFeedbackLabel" wrapText="true" />
+                </HBox>
+                <Label fx:id="detailsTitleLabel"
+                       style="-fx-font-size: 24px; -fx-font-weight: bold;"
+                       wrapText="true" />
+                <Label fx:id="detailsReleaseDateLabel" wrapText="true" />
+                <Label fx:id="detailsRatingLabel" wrapText="true" />
+                <Label text="Overview" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+                    <content>
+                        <VBox>
+                            <Label fx:id="detailsOverviewLabel"
+                                   maxWidth="Infinity"
+                                   wrapText="true" />
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </VBox>
+        </StackPane>
     </center>
 </BorderPane>

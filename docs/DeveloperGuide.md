@@ -1,6 +1,6 @@
 # Movie Tracker Developer Guide
 
-Movie Tracker is still under development. Movie search is connected to the graphical interface; movie details, watchlist workflows, and persistence are not yet available through the GUI.
+Movie Tracker is still under development. Movie search and movie details are connected to the graphical interface; watchlist workflows and persistence are not yet available through the GUI.
 
 ## Current architecture
 
@@ -20,7 +20,13 @@ The service converts network, timeout, response, authentication, rate-limit, not
 
 `MovieSearchMessages` converts service failure types into user-facing text without exposing low-level errors. Its mapping is covered by automated tests. The remaining JavaFX interaction is verified manually.
 
-Movie details, persistence, and user-facing watchlist workflows have not been implemented.
+## Movie details GUI
+
+Each search result is a selectable button carrying its application-level `MovieInfo`. Selecting it hides the search view without clearing it and starts a background JavaFX `Task` that calls `MovieApiService.getMovieDetails`. Success and failure handlers update the details view on the JavaFX Application Thread.
+
+The details view displays safe fallback text for missing dates, ratings, and overviews. `MovieDetailsText` keeps that non-GUI formatting logic independently testable. Returning to the search view only toggles view visibility, preserving the previous query and result controls without another API search.
+
+Persistence and user-facing watchlist workflows have not been implemented.
 
 ## Acknowledgements
 

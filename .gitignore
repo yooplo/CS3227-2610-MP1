@@ -1,0 +1,19 @@
+# Gradle output and local state
+.gradle/
+build/
+
+# IDE files
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Runtime data and local secrets
+data/
+.env

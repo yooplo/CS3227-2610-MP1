@@ -24,6 +24,7 @@
             <Region HBox.hgrow="ALWAYS" />
             <Button text="Search" onAction="#handleShowSearch" />
             <Button text="Watchlist" onAction="#handleShowWatchlist" />
+            <Button text="Watched" onAction="#handleShowWatched" />
         </HBox>
     </top>
     <center>
@@ -89,6 +90,18 @@
                 <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
                     <content>
                         <VBox fx:id="watchlistBox" spacing="10.0" />
+                    </content>
+                </ScrollPane>
+            </VBox>
+            <VBox fx:id="watchedView" spacing="16.0" visible="false" managed="false">
+                <Label text="Watched"
+                       style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+                <Label fx:id="watchedFeedbackLabel"
+                       text="You have not marked any movies as watched."
+                       wrapText="true" />
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+                    <content>
+                        <VBox fx:id="watchedBox" spacing="10.0" />
                     </content>
                 </ScrollPane>
             </VBox>

@@ -81,6 +81,28 @@ class MovieCollectionTest {
     }
 
     @Test
+    void markAsWatchedMovesMovieBetweenStatusLists() {
+        Movie movie = movie(157336, "Interstellar", WatchStatus.WATCHLIST);
+        collection.add(movie);
+
+        collection.markAsWatched(157336);
+
+        assertTrue(collection.getWatchlistMovies().isEmpty());
+        assertEquals(List.of(movie), collection.getWatchedMovies());
+    }
+
+    @Test
+    void duplicateAddDoesNotChangeWatchedMovieBackToWatchlist() {
+        Movie watchedMovie = movie(157336, "Interstellar", WatchStatus.WATCHED);
+        collection.add(watchedMovie);
+
+        assertFalse(collection.add(movie(157336, "Changed metadata", WatchStatus.WATCHLIST)));
+
+        assertTrue(collection.getWatchlistMovies().isEmpty());
+        assertEquals(List.of(watchedMovie), collection.getWatchedMovies());
+    }
+
+    @Test
     void statusListsContainOnlyMoviesWithRequestedStatus() {
         Movie watchlistMovie = movie(157336, "Interstellar", WatchStatus.WATCHLIST);
         Movie watchedMovie = movie(27205, "Inception", WatchStatus.WATCHED);

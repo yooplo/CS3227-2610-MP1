@@ -1,8 +1,8 @@
 # Movie Tracker User Guide
 
-Movie Tracker is still under development. The current application supports searching TMDB, viewing movie details, and maintaining an in-memory watchlist for the current application session.
+Movie Tracker is still under development. The current application supports searching TMDB, viewing movie details, and maintaining in-memory Watchlist and Watched collections for the current application session.
 
-Watched status and local persistence have not been implemented yet. **Watchlist contents are lost when Movie Tracker exits.**
+Local persistence has not been implemented yet. **Watchlist and Watched contents are lost when Movie Tracker exits.** Moving a watched movie back to the Watchlist is not currently supported.
 
 ## Prerequisites
 
@@ -53,6 +53,14 @@ The current watchlist workflow is:
 6. Select **Remove** beside that movie to remove only that entry.
 7. Return to **Search**; the previous query and results remain available without another search.
 
+The current watched-movies workflow is:
+
+1. Open **Watchlist**.
+2. Select **Mark as Watched** beside a movie.
+3. Confirm that it disappears from Watchlist immediately.
+4. Open **Watched** and confirm that the movie appears with its available release date and TMDB rating.
+5. Search for and open that movie again; confirm that the details view says it is already watched and does not allow it to be added to Watchlist again.
+
 Also verify that:
 
 - A blank query displays guidance without sending a request.
@@ -62,3 +70,4 @@ Also verify that:
 - A details request failure displays an understandable message and still allows returning to the search results.
 - Opening a movie that is already saved reports that it is already in the collection and does not create a duplicate.
 - Removing a movie allows it to be added again after opening its details later.
+- A watched movie does not appear in Watchlist and cannot be moved back in this version.

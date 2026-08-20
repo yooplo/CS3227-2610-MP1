@@ -1,6 +1,6 @@
 # Movie Tracker Developer Guide
 
-Movie Tracker is still under development. Movie search, details, and an in-memory watchlist are connected to the graphical interface. Watched-status workflows and persistence are not yet available through the GUI.
+Movie Tracker is still under development. Movie search, details, and in-memory Watchlist and Watched workflows are connected to the graphical interface. Persistence is not yet available.
 
 ## Current architecture
 
@@ -32,7 +32,13 @@ The details view displays safe fallback text for missing dates, ratings, and ove
 
 The Watchlist view is refreshed from `MovieCollection.getWatchlistMovies` whenever it is opened and after removal. Each Remove action captures the entry's TMDB ID and calls `MovieCollection.remove`, then refreshes the view immediately. Search controls and result nodes remain in memory while the Watchlist view is displayed.
 
-There is no storage integration yet. The single collection exists only for the lifetime of the running application, and all saved movies are lost on exit.
+## In-memory watched movies
+
+The Watchlist action delegates the one-way status transition to `MovieCollection.markAsWatched`. It then refreshes the Watchlist from `getWatchlistMovies` and the Watched view from `getWatchedMovies`, so the same domain object moves between the filtered views without being duplicated or replaced.
+
+When details are opened, the controller looks up the TMDB ID in the shared collection. A `WATCHED` movie disables Add to Watchlist and displays an already-watched message. No watched-to-watchlist transition is exposed.
+
+There is no storage integration yet. The single collection exists only for the lifetime of the running application, and all Watchlist and Watched data is lost on exit.
 
 ## Acknowledgements
 

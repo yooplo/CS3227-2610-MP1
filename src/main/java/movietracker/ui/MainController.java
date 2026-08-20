@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -19,6 +20,7 @@ import movietracker.model.MovieInfo;
 import movietracker.model.Movie;
 import movietracker.model.MovieCollection;
 import movietracker.model.MovieFactory;
+import movietracker.model.WatchStatus;
 import movietracker.service.MovieApiService;
 import movietracker.service.MovieServiceException;
 
@@ -85,6 +87,15 @@ public class MainController {
 
     @FXML
     private Label watchlistFeedbackLabel;
+
+    @FXML
+    private VBox watchedView;
+
+    @FXML
+    private VBox watchedBox;
+
+    @FXML
+    private Label watchedFeedbackLabel;
 
     public MainController(MovieApiService movieApiService, MovieCollection movieCollection) {
         this.movieApiService = Objects.requireNonNull(movieApiService);
@@ -238,6 +249,8 @@ public class MainController {
         detailsView.setManaged(false);
         watchlistView.setVisible(false);
         watchlistView.setManaged(false);
+        watchedView.setVisible(false);
+        watchedView.setManaged(false);
     }
 
     private void showDetailsView() {
@@ -247,6 +260,8 @@ public class MainController {
         detailsView.setManaged(true);
         watchlistView.setVisible(false);
         watchlistView.setManaged(false);
+        watchedView.setVisible(false);
+        watchedView.setManaged(false);
     }
 
     @FXML
@@ -263,6 +278,21 @@ public class MainController {
         detailsView.setManaged(false);
         watchlistView.setVisible(true);
         watchlistView.setManaged(true);
+        watchedView.setVisible(false);
+        watchedView.setManaged(false);
+    }
+
+    @FXML
+    private void handleShowWatched() {
+        refreshWatched();
+        searchView.setVisible(false);
+        searchView.setManaged(false);
+        detailsView.setVisible(false);
+        detailsView.setManaged(false);
+        watchlistView.setVisible(false);
+        watchlistView.setManaged(false);
+        watchedView.setVisible(true);
+        watchedView.setManaged(true);
     }
 
     @FXML
@@ -276,17 +306,23 @@ public class MainController {
             watchlistActionLabel.setText("Added to your watchlist.");
             addToWatchlistButton.setDisable(true);
         } else {
-            watchlistActionLabel.setText("This movie is already in your collection.");
+            updateAddToWatchlistState(movie.getTmdbId());
             addToWatchlistButton.setDisable(true);
         }
     }
 
     private void updateAddToWatchlistState(int tmdbId) {
-        boolean alreadySaved = movieCollection.findByTmdbId(tmdbId).isPresent();
-        addToWatchlistButton.setDisable(alreadySaved);
-        watchlistActionLabel.setText(alreadySaved
-                ? "This movie is already in your collection."
-                : "");
+        Optional<Movie> savedMovie = movieCollection.findByTmdbId(tmdbId);
+        if (savedMovie.isEmpty()) {
+            addToWatchlistButton.setDisable(false);
+            watchlistActionLabel.setText("");
+            return;
+        }
+
+        addToWatchlistButton.setDisable(true);
+        watchlistActionLabel.setText(savedMovie.orElseThrow().getWatchStatus() == WatchStatus.WATCHED
+                ? "This movie is already in your collection and already watched."
+                : "This movie is already in your watchlist.");
     }
 
     private void refreshWatchlist() {
@@ -306,6 +342,54 @@ public class MainController {
     }
 
     private HBox createWatchlistEntry(Movie movie) {
+        VBox information = createSavedMovieInformation(movie);
+
+        Button watchedButton = new Button("Mark as Watched");
+        watchedButton.setOnAction(event -> {
+            movieCollection.markAsWatched(movie.getTmdbId());
+            refreshWatchlist();
+            refreshWatched();
+        });
+
+        Button removeButton = new Button("Remove");
+        removeButton.setOnAction(event -> {
+            movieCollection.remove(movie.getTmdbId());
+            refreshWatchlist();
+        });
+
+        HBox entry = new HBox(12.0, information, watchedButton, removeButton);
+        entry.setAlignment(Pos.CENTER_LEFT);
+        entry.setStyle("-fx-padding: 12px; -fx-background-color: #f3f4f6; "
+                + "-fx-background-radius: 6px;");
+        return entry;
+    }
+
+    private void refreshWatched() {
+        List<Movie> watchedMovies = movieCollection.getWatchedMovies();
+        watchedBox.getChildren().clear();
+
+        if (watchedMovies.isEmpty()) {
+            watchedFeedbackLabel.setText("You have not marked any movies as watched.");
+            return;
+        }
+
+        watchedFeedbackLabel.setText(
+                watchedMovies.size() + (watchedMovies.size() == 1
+                        ? " watched movie."
+                        : " watched movies."));
+        watchedMovies.forEach(movie -> watchedBox.getChildren().add(createWatchedEntry(movie)));
+    }
+
+    private HBox createWatchedEntry(Movie movie) {
+        VBox information = createSavedMovieInformation(movie);
+        HBox entry = new HBox(12.0, information);
+        entry.setAlignment(Pos.CENTER_LEFT);
+        entry.setStyle("-fx-padding: 12px; -fx-background-color: #f3f4f6; "
+                + "-fx-background-radius: 6px;");
+        return entry;
+    }
+
+    private VBox createSavedMovieInformation(Movie movie) {
         Label title = new Label(movie.getTitle());
         title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
         VBox information = new VBox(4.0, title);
@@ -322,17 +406,7 @@ public class MainController {
                     movie.getExternalRating())));
         }
 
-        Button removeButton = new Button("Remove");
-        removeButton.setOnAction(event -> {
-            movieCollection.remove(movie.getTmdbId());
-            refreshWatchlist();
-        });
-
-        HBox entry = new HBox(12.0, information, removeButton);
-        entry.setAlignment(Pos.CENTER_LEFT);
-        entry.setStyle("-fx-padding: 12px; -fx-background-color: #f3f4f6; "
-                + "-fx-background-radius: 6px;");
-        return entry;
+        return information;
     }
 
     private void setDetailsInProgress(boolean inProgress) {

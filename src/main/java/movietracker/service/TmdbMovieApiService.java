@@ -112,6 +112,7 @@ public final class TmdbMovieApiService implements MovieApiService {
     static FailureType failureTypeForStatus(int statusCode) {
         return switch (statusCode) {
         case 401, 403 -> FailureType.AUTHENTICATION;
+        case 408, 504 -> FailureType.TIMEOUT;
         case 404 -> FailureType.NOT_FOUND;
         case 429 -> FailureType.RATE_LIMIT;
         default -> FailureType.HTTP_ERROR;

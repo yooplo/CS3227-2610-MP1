@@ -50,6 +50,18 @@ class MovieTest {
                 () -> movie(157336, "Interstellar", null));
     }
 
+    @Test
+    void constructorRejectsInvalidExternalRatings() {
+        assertThrows(IllegalArgumentException.class,
+                () -> movieWithRating(-0.1));
+        assertThrows(IllegalArgumentException.class,
+                () -> movieWithRating(10.1));
+        assertThrows(IllegalArgumentException.class,
+                () -> movieWithRating(Double.NaN));
+        assertThrows(IllegalArgumentException.class,
+                () -> movieWithRating(Double.POSITIVE_INFINITY));
+    }
+
     private static Movie movie(int tmdbId, String title, WatchStatus status) {
         return new Movie(
                 tmdbId,
@@ -59,5 +71,16 @@ class MovieTest {
                 "/poster.jpg",
                 8.7,
                 status);
+    }
+
+    private static Movie movieWithRating(double externalRating) {
+        return new Movie(
+                157336,
+                "Interstellar",
+                null,
+                null,
+                null,
+                externalRating,
+                WatchStatus.WATCHLIST);
     }
 }

@@ -81,6 +81,15 @@ class MovieCollectionTest {
     }
 
     @Test
+    void markAsWatchedReportsNoChangeForAlreadyWatchedMovie() {
+        Movie movie = movie(157336, "Interstellar", WatchStatus.WATCHED);
+        collection.add(movie);
+
+        assertFalse(collection.markAsWatched(157336));
+        assertEquals(WatchStatus.WATCHED, movie.getWatchStatus());
+    }
+
+    @Test
     void markAsWatchedMovesMovieBetweenStatusLists() {
         Movie movie = movie(157336, "Interstellar", WatchStatus.WATCHLIST);
         collection.add(movie);

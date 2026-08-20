@@ -97,6 +97,7 @@ class TmdbMovieMapperTest {
     @Test
     void malformedJsonProducesInvalidResponseFailure() {
         assertInvalidResponse(() -> mapper.parseSearchResults("{not-json"));
+        assertInvalidResponse(() -> mapper.parseSearchResults(null));
     }
 
     @Test

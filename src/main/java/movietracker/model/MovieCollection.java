@@ -37,7 +37,7 @@ public final class MovieCollection {
 
     public boolean markAsWatched(int tmdbId) {
         Movie movie = moviesByTmdbId.get(tmdbId);
-        if (movie == null) {
+        if (movie == null || movie.getWatchStatus() == WatchStatus.WATCHED) {
             return false;
         }
 

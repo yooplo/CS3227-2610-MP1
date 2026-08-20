@@ -26,6 +26,13 @@ import movietracker.service.MovieApiService;
 import movietracker.service.MovieServiceException;
 
 public class MainController {
+    private enum View {
+        SEARCH,
+        DETAILS,
+        WATCHLIST,
+        WATCHED
+    }
+
     private static final DateTimeFormatter RELEASE_DATE_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
     private static final String SAVE_FAILURE_MESSAGE = "Your change is available for this session, "
             + "but it could not be saved. Check access to the data folder.";
@@ -36,6 +43,8 @@ public class MainController {
     private final MovieCollectionManager movieCollectionManager;
     private final String startupWarning;
     private MovieInfo currentMovieDetails;
+    private Integer loadingDetailsTmdbId;
+    private long detailsRequestVersion;
 
     @FXML
     private TextField searchField;
@@ -123,7 +132,7 @@ public class MainController {
         detailsLoadingIndicator.setManaged(false);
         addToWatchlistButton.setDisable(true);
         showStorageFeedback(startupWarning);
-        showSearchView();
+        showView(View.SEARCH);
     }
 
     @FXML
@@ -201,7 +210,15 @@ public class MainController {
     }
 
     private void loadMovieDetails(MovieInfo selectedMovie) {
-        showDetailsView();
+        if (loadingDetailsTmdbId != null
+                && loadingDetailsTmdbId == selectedMovie.tmdbId()) {
+            showView(View.DETAILS);
+            return;
+        }
+
+        long requestVersion = ++detailsRequestVersion;
+        loadingDetailsTmdbId = selectedMovie.tmdbId();
+        showView(View.DETAILS);
         setDetailsInProgress(true);
         clearDetails();
         currentMovieDetails = null;
@@ -217,10 +234,18 @@ public class MainController {
         };
 
         detailsTask.setOnSucceeded(event -> {
+            if (requestVersion != detailsRequestVersion) {
+                return;
+            }
+            loadingDetailsTmdbId = null;
             setDetailsInProgress(false);
             showMovieDetails(detailsTask.getValue());
         });
         detailsTask.setOnFailed(event -> {
+            if (requestVersion != detailsRequestVersion) {
+                return;
+            }
+            loadingDetailsTmdbId = null;
             setDetailsInProgress(false);
             clearDetails();
             detailsTitleLabel.setText(selectedMovie.title());
@@ -253,60 +278,24 @@ public class MainController {
 
     @FXML
     private void handleBackToResults() {
-        showSearchView();
-    }
-
-    private void showSearchView() {
-        searchView.setVisible(true);
-        searchView.setManaged(true);
-        detailsView.setVisible(false);
-        detailsView.setManaged(false);
-        watchlistView.setVisible(false);
-        watchlistView.setManaged(false);
-        watchedView.setVisible(false);
-        watchedView.setManaged(false);
-    }
-
-    private void showDetailsView() {
-        searchView.setVisible(false);
-        searchView.setManaged(false);
-        detailsView.setVisible(true);
-        detailsView.setManaged(true);
-        watchlistView.setVisible(false);
-        watchlistView.setManaged(false);
-        watchedView.setVisible(false);
-        watchedView.setManaged(false);
+        showView(View.SEARCH);
     }
 
     @FXML
     private void handleShowSearch() {
-        showSearchView();
+        showView(View.SEARCH);
     }
 
     @FXML
     private void handleShowWatchlist() {
         refreshWatchlist();
-        searchView.setVisible(false);
-        searchView.setManaged(false);
-        detailsView.setVisible(false);
-        detailsView.setManaged(false);
-        watchlistView.setVisible(true);
-        watchlistView.setManaged(true);
-        watchedView.setVisible(false);
-        watchedView.setManaged(false);
+        showView(View.WATCHLIST);
     }
 
     @FXML
     private void handleShowWatched() {
         refreshWatched();
-        searchView.setVisible(false);
-        searchView.setManaged(false);
-        detailsView.setVisible(false);
-        detailsView.setManaged(false);
-        watchlistView.setVisible(false);
-        watchlistView.setManaged(false);
-        watchedView.setVisible(true);
-        watchedView.setManaged(true);
+        showView(View.WATCHED);
     }
 
     @FXML
@@ -458,5 +447,17 @@ public class MainController {
         storageFeedbackLabel.setText(message);
         storageFeedbackLabel.setVisible(hasMessage);
         storageFeedbackLabel.setManaged(hasMessage);
+    }
+
+    private void showView(View view) {
+        setViewState(searchView, view == View.SEARCH);
+        setViewState(detailsView, view == View.DETAILS);
+        setViewState(watchlistView, view == View.WATCHLIST);
+        setViewState(watchedView, view == View.WATCHED);
+    }
+
+    private void setViewState(VBox view, boolean shown) {
+        view.setVisible(shown);
+        view.setManaged(shown);
     }
 }

@@ -9,7 +9,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import movietracker.model.Movie;
 import movietracker.model.MovieCollection;
 import movietracker.model.WatchStatus;
@@ -22,7 +24,9 @@ public final class MovieStorage {
 
     public MovieStorage(Path storagePath) {
         this.storagePath = Objects.requireNonNull(storagePath, "storagePath must not be null");
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = JsonMapper.builder()
+                .disable(MapperFeature.ALLOW_COERCION_OF_SCALARS)
+                .build();
     }
 
     public MovieCollection load() throws StorageException {
@@ -34,7 +38,7 @@ public final class MovieStorage {
             StoredCollection storedCollection = objectMapper.readValue(
                     storagePath.toFile(), StoredCollection.class);
             return toMovieCollection(storedCollection);
-        } catch (IOException | IllegalArgumentException exception) {
+        } catch (IOException | RuntimeException exception) {
             throw new StorageException("Saved movie data could not be loaded", exception);
         }
     }
@@ -54,7 +58,7 @@ public final class MovieStorage {
             StoredCollection storedCollection = StoredCollection.from(movieCollection);
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(temporaryFile.toFile(), storedCollection);
             replaceStorageFile(temporaryFile);
-        } catch (IOException exception) {
+        } catch (IOException | RuntimeException exception) {
             deleteTemporaryFile(temporaryFile);
             throw new StorageException("Saved movie data could not be written", exception);
         }
@@ -131,10 +135,6 @@ public final class MovieStorage {
         }
 
         private Movie toMovie() {
-            if (externalRating != null
-                    && (!Double.isFinite(externalRating) || externalRating < 0 || externalRating > 10)) {
-                throw new IllegalArgumentException("Invalid external rating");
-            }
             LocalDate parsedReleaseDate = releaseDate == null || releaseDate.isBlank()
                     ? null
                     : LocalDate.parse(releaseDate);

@@ -116,6 +116,16 @@ class FakeMovieApiServiceTest {
         assertThrows(IllegalArgumentException.class, () -> movieInfo(157336, "  "));
     }
 
+    @Test
+    void movieInfoRejectsInvalidExternalRating() {
+        assertThrows(IllegalArgumentException.class, () -> new MovieInfo(
+                157336, "Interstellar", null, null, null, -0.1));
+        assertThrows(IllegalArgumentException.class, () -> new MovieInfo(
+                157336, "Interstellar", null, null, null, 10.1));
+        assertThrows(IllegalArgumentException.class, () -> new MovieInfo(
+                157336, "Interstellar", null, null, null, Double.NaN));
+    }
+
     private static MovieInfo movieInfo(int tmdbId, String title) {
         return new MovieInfo(
                 tmdbId,

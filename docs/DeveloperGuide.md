@@ -14,6 +14,8 @@ The core domain contains application-level movie information, saved movies, watc
 
 The service converts network, timeout, response, authentication, rate-limit, not-found, and other HTTP failures into `MovieServiceException`. Automated tests use local JSON and do not require a token or network access.
 
+HTTP 408 and 504 responses are classified as timeouts. Successful responses are still validated: a null body, malformed JSON, missing required ID/title fields, invalid metadata types, invalid dates, and external ratings outside TMDB's 0–10 scale become `INVALID_RESPONSE` failures.
+
 ## Search GUI
 
 `MainController` depends on the `MovieApiService` interface and contains no TMDB-specific HTTP or JSON handling. It runs searches in a JavaFX `Task` on a daemon background thread. JavaFX task handlers then update loading state, feedback, and result controls on the JavaFX Application Thread.
@@ -23,6 +25,8 @@ The service converts network, timeout, response, authentication, rate-limit, not
 ## Movie details GUI
 
 Each search result is a selectable button carrying its application-level `MovieInfo`. Selecting it hides the search view without clearing it and starts a background JavaFX `Task` that calls `MovieApiService.getMovieDetails`. Success and failure handlers update the details view on the JavaFX Application Thread.
+
+The controller tracks the active detail request. Re-selecting the same movie while it is loading does not issue a duplicate request, and a late result from an older request cannot overwrite a newer movie selection. View visibility is updated through one shared helper so Search, Details, Watchlist, and Watched cannot accidentally remain managed at the same time.
 
 The details view displays safe fallback text for missing dates, ratings, and overviews. `MovieDetailsText` keeps that non-GUI formatting logic independently testable. Returning to the search view only toggles view visibility, preserving the previous query and result controls without another API search.
 
@@ -48,7 +52,7 @@ At startup, `MovieTrackerApplication` calls `MovieStorage.load` before construct
 
 Saving first serializes to a temporary file in the same directory and then replaces `movies.json`, using an atomic move where the file system supports it. A save failure leaves the in-memory change available for the current session and displays a general warning rather than crashing or exposing file-system details.
 
-Malformed JSON, unsupported format versions, invalid movie fields, invalid statuses, invalid dates, and duplicate TMDB IDs are treated as corrupted storage. `MovieTrackerApplication` then starts with an empty in-memory collection and disables persistence for that run. This preserves the existing file and prevents later user actions from accidentally overwriting it. The UI keeps working and displays a persistent warning explaining that changes are session-only.
+Malformed JSON, unsupported format versions, incorrectly typed scalar values, invalid movie fields, invalid statuses, invalid dates, external ratings outside 0–10, and duplicate TMDB IDs are treated as corrupted storage. `MovieTrackerApplication` then starts with an empty in-memory collection and disables persistence for that run. This preserves the existing file and prevents later user actions from accidentally overwriting it. The UI keeps working and displays a persistent warning explaining that changes are session-only. `Movie` and `MovieInfo` share the same validation for TMDB identity, title, and external rating, preventing invalid application objects from later producing unreadable saved data.
 
 Storage tests use JUnit temporary directories, never the production `data/movies.json`, and cover empty and multiple-movie saves, status preservation, missing paths, optional metadata, round trips, corruption, invalid data, failed saves, and mutation-triggered persistence. They do not access TMDB.
 

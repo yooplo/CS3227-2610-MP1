@@ -38,6 +38,9 @@ final class TmdbMovieMapper {
     }
 
     private JsonNode parseJson(String responseBody) throws MovieServiceException {
+        if (responseBody == null) {
+            throw invalidResponse("TMDB returned an empty response", null);
+        }
         try {
             JsonNode root = objectMapper.readTree(responseBody);
             if (root == null || !root.isObject()) {

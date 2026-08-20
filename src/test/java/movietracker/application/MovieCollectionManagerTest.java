@@ -48,6 +48,17 @@ class MovieCollectionManagerTest {
     }
 
     @Test
+    void markingAlreadyWatchedMovieDoesNotRewriteStorage() throws Exception {
+        MovieStorage storage = storage();
+        MovieCollection collection = new MovieCollection();
+        collection.add(new Movie(1, "Movie 1", null, null, null, null, WatchStatus.WATCHED));
+        MovieCollectionManager manager = new MovieCollectionManager(collection, storage, true);
+
+        assertEquals(MutationResult.NO_CHANGE, manager.markAsWatched(1));
+        assertFalse(Files.exists(storage.getStoragePath()));
+    }
+
+    @Test
     void disabledPersistenceNeverOverwritesExistingCorruptedFile() throws Exception {
         MovieStorage storage = storage();
         Files.createDirectories(storage.getStoragePath().getParent());

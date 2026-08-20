@@ -31,6 +31,12 @@ class TmdbMovieApiServiceTest {
     }
 
     @Test
+    void mapsTimeoutStatuses() {
+        assertEquals(FailureType.TIMEOUT, TmdbMovieApiService.failureTypeForStatus(408));
+        assertEquals(FailureType.TIMEOUT, TmdbMovieApiService.failureTypeForStatus(504));
+    }
+
+    @Test
     void mapsOtherFailureStatusesToHttpError() {
         assertEquals(FailureType.HTTP_ERROR, TmdbMovieApiService.failureTypeForStatus(400));
         assertEquals(FailureType.HTTP_ERROR, TmdbMovieApiService.failureTypeForStatus(500));

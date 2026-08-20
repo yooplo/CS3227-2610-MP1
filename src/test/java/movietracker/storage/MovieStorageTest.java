@@ -120,6 +120,44 @@ class MovieStorageTest {
     }
 
     @Test
+    void missingWatchStatusIsReportedAsCorruptedStorage() throws IOException {
+        Path storagePath = temporaryDirectory.resolve("movies.json");
+        Files.writeString(storagePath, """
+                {
+                  "version": 1,
+                  "movies": [{"tmdbId": 1, "title": "Missing status"}]
+                }
+                """);
+
+        assertThrows(StorageException.class, () -> new MovieStorage(storagePath).load());
+    }
+
+    @Test
+    void unsupportedFormatVersionIsReportedAsCorruptedStorage() throws IOException {
+        Path storagePath = temporaryDirectory.resolve("movies.json");
+        Files.writeString(storagePath, "{\"version\":2,\"movies\":[]}");
+
+        assertThrows(StorageException.class, () -> new MovieStorage(storagePath).load());
+    }
+
+    @Test
+    void scalarTypeCoercionIsRejected() throws IOException {
+        Path storagePath = temporaryDirectory.resolve("movies.json");
+        Files.writeString(storagePath, """
+                {
+                  "version": 1,
+                  "movies": [{
+                    "tmdbId": "1",
+                    "title": "Wrong ID type",
+                    "watchStatus": "WATCHLIST"
+                  }]
+                }
+                """);
+
+        assertThrows(StorageException.class, () -> new MovieStorage(storagePath).load());
+    }
+
+    @Test
     void duplicateStoredMovieIdsAreRejected() throws IOException {
         Path storagePath = temporaryDirectory.resolve("movies.json");
         Files.writeString(storagePath, """

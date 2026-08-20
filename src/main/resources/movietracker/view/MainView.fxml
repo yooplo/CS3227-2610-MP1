@@ -5,110 +5,211 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="movietracker.ui.MainController">
-    <padding>
-        <Insets top="24.0" right="24.0" bottom="24.0" left="24.0" />
-    </padding>
+            fx:controller="movietracker.ui.MainController"
+            stylesheets="@MovieTracker.css"
+            styleClass="app-root">
     <top>
-        <VBox spacing="8.0">
-            <HBox alignment="CENTER_LEFT" spacing="8.0">
-                <Label text="Movie Tracker" style="-fx-font-size: 28px; -fx-font-weight: bold;" />
-                <Region HBox.hgrow="ALWAYS" />
-                <Button text="Search" onAction="#handleShowSearch" />
-                <Button text="Watchlist" onAction="#handleShowWatchlist" />
-                <Button text="Watched" onAction="#handleShowWatched" />
+        <VBox spacing="14.0" styleClass="app-header">
+            <VBox spacing="2.0">
+                <Label text="Movie Tracker" styleClass="brand-title" />
+                <Label text="Find films. Build your watchlist. Remember what you watched."
+                       styleClass="brand-subtitle"
+                       wrapText="true" />
+            </VBox>
+            <HBox alignment="CENTER_LEFT" spacing="6.0" styleClass="main-navigation">
+                <Button fx:id="searchNavButton"
+                        text="Search"
+                        styleClass="nav-button"
+                        onAction="#handleShowSearch" />
+                <Button fx:id="watchlistNavButton"
+                        text="Watchlist"
+                        styleClass="nav-button"
+                        onAction="#handleShowWatchlist" />
+                <Button fx:id="watchedNavButton"
+                        text="Watched"
+                        styleClass="nav-button"
+                        onAction="#handleShowWatched" />
             </HBox>
             <Label fx:id="storageFeedbackLabel"
                    managed="false"
                    visible="false"
                    wrapText="true"
-                   style="-fx-text-fill: #9a3412; -fx-background-color: #ffedd5; -fx-padding: 8px;" />
+                   maxWidth="Infinity"
+                   styleClass="warning-banner" />
         </VBox>
     </top>
     <center>
-        <StackPane>
-            <VBox fx:id="searchView" spacing="16.0">
-            <HBox spacing="8.0">
-                <TextField fx:id="searchField"
-                           HBox.hgrow="ALWAYS"
-                           promptText="Search by movie title"
-                           onAction="#handleSearch" />
-                <Button fx:id="searchButton" text="Search" onAction="#handleSearch" />
-            </HBox>
-                <HBox alignment="CENTER_LEFT" spacing="8.0">
-                <ProgressIndicator fx:id="loadingIndicator" prefHeight="22.0" prefWidth="22.0" />
-                <Label fx:id="feedbackLabel"
-                       text="Enter a movie title or keyword to search."
-                       wrapText="true" />
+        <StackPane styleClass="content-area">
+            <padding>
+                <Insets top="28.0" right="32.0" bottom="32.0" left="32.0" />
+            </padding>
+
+            <VBox fx:id="searchView" spacing="18.0" styleClass="page">
+                <VBox spacing="4.0">
+                    <Label text="Search movies" styleClass="page-title" />
+                    <Label text="Search TMDB by title or keyword, then select a movie to view its details."
+                           wrapText="true"
+                           styleClass="page-description" />
+                </VBox>
+                <HBox spacing="10.0" alignment="CENTER_LEFT" styleClass="search-bar">
+                    <TextField fx:id="searchField"
+                               HBox.hgrow="ALWAYS"
+                               promptText="Search by movie title or keyword"
+                               styleClass="search-input"
+                               onAction="#handleSearch" />
+                    <Button fx:id="searchButton"
+                            text="Search"
+                            styleClass="primary-button"
+                            onAction="#handleSearch" />
                 </HBox>
-                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
-                    <content>
-                        <VBox fx:id="resultsBox" spacing="10.0" />
-                    </content>
-                </ScrollPane>
-            </VBox>
-            <VBox fx:id="detailsView" spacing="16.0" visible="false" managed="false">
-                <Button fx:id="backButton"
-                        text="Back to search results"
-                        onAction="#handleBackToResults" />
-                <HBox alignment="CENTER_LEFT" spacing="8.0">
-                    <ProgressIndicator fx:id="detailsLoadingIndicator"
+                <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="feedback-row">
+                    <ProgressIndicator fx:id="loadingIndicator"
                                        prefHeight="22.0"
                                        prefWidth="22.0" />
-                    <Label fx:id="detailsFeedbackLabel" wrapText="true" />
+                    <Label fx:id="feedbackLabel"
+                           text="Enter a movie title or keyword to search."
+                           wrapText="true"
+                           styleClass="feedback-text" />
                 </HBox>
-                <Label fx:id="detailsTitleLabel"
-                       style="-fx-font-size: 24px; -fx-font-weight: bold;"
-                       wrapText="true" />
-                <Label fx:id="detailsReleaseDateLabel" wrapText="true" />
-                <Label fx:id="detailsRatingLabel" wrapText="true" />
-                <Label text="Overview" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
-                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll">
                     <content>
-                        <VBox>
-                            <Label fx:id="detailsOverviewLabel"
-                                   maxWidth="Infinity"
-                                   wrapText="true" />
+                        <VBox fx:id="resultsBox" spacing="14.0">
+                            <padding>
+                                <Insets top="2.0" right="4.0" bottom="8.0" left="2.0" />
+                            </padding>
                         </VBox>
                     </content>
                 </ScrollPane>
-                <HBox alignment="CENTER_LEFT" spacing="10.0">
-                    <Button fx:id="addToWatchlistButton"
-                            text="Add to Watchlist"
-                            onAction="#handleAddToWatchlist" />
-                    <Label fx:id="watchlistActionLabel" wrapText="true" />
-                </HBox>
             </VBox>
-            <VBox fx:id="watchlistView" spacing="16.0" visible="false" managed="false">
-                <Label text="Watchlist"
-                       style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+
+            <VBox fx:id="detailsView"
+                  spacing="18.0"
+                  visible="false"
+                  managed="false"
+                  styleClass="page">
+                <HBox alignment="CENTER_LEFT" spacing="12.0">
+                    <Button fx:id="backButton"
+                            text="← Back to search results"
+                            styleClass="secondary-button"
+                            onAction="#handleBackToResults" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <ProgressIndicator fx:id="detailsLoadingIndicator"
+                                       prefHeight="22.0"
+                                       prefWidth="22.0" />
+                </HBox>
+                <Label fx:id="detailsFeedbackLabel"
+                       wrapText="true"
+                       maxWidth="Infinity"
+                       styleClass="feedback-text" />
+                <VBox spacing="18.0" VBox.vgrow="ALWAYS" styleClass="details-panel">
+                    <HBox spacing="18.0" alignment="TOP_LEFT" VBox.vgrow="ALWAYS">
+                        <StackPane minWidth="124.0"
+                                   prefWidth="124.0"
+                                   maxWidth="124.0"
+                                   minHeight="178.0"
+                                   prefHeight="178.0"
+                                   maxHeight="178.0"
+                                   styleClass="details-poster-placeholder">
+                            <Label text="POSTER" styleClass="poster-placeholder-text" />
+                        </StackPane>
+                        <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                            <Label fx:id="detailsTitleLabel"
+                                   maxWidth="Infinity"
+                                   wrapText="true"
+                                   styleClass="details-title" />
+                            <FlowPane hgap="8.0" vgap="8.0">
+                                <Label fx:id="detailsReleaseDateLabel"
+                                       wrapText="true"
+                                       styleClass="metadata-pill" />
+                                <Label fx:id="detailsRatingLabel"
+                                       wrapText="true"
+                                       styleClass="rating-pill" />
+                            </FlowPane>
+                            <Separator />
+                            <VBox spacing="6.0" VBox.vgrow="ALWAYS">
+                                <Label text="Overview" styleClass="section-title" />
+                                <ScrollPane fitToWidth="true"
+                                            VBox.vgrow="ALWAYS"
+                                            styleClass="overview-scroll">
+                                    <content>
+                                        <Label fx:id="detailsOverviewLabel"
+                                               maxWidth="Infinity"
+                                               wrapText="true"
+                                               styleClass="overview-text" />
+                                    </content>
+                                </ScrollPane>
+                            </VBox>
+                        </VBox>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="details-actions">
+                        <Button fx:id="addToWatchlistButton"
+                                text="Add to Watchlist"
+                                styleClass="primary-button"
+                                onAction="#handleAddToWatchlist" />
+                        <Label fx:id="watchlistActionLabel"
+                               wrapText="true"
+                               styleClass="action-feedback" />
+                    </HBox>
+                </VBox>
+            </VBox>
+
+            <VBox fx:id="watchlistView"
+                  spacing="18.0"
+                  visible="false"
+                  managed="false"
+                  styleClass="page">
+                <VBox spacing="4.0">
+                    <Label text="Watchlist" styleClass="page-title" />
+                    <Label text="Movies you want to watch next."
+                           styleClass="page-description" />
+                </VBox>
                 <Label fx:id="watchlistFeedbackLabel"
                        text="Your watchlist is empty."
-                       wrapText="true" />
-                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+                       wrapText="true"
+                       styleClass="feedback-text" />
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll">
                     <content>
-                        <VBox fx:id="watchlistBox" spacing="10.0" />
+                        <VBox fx:id="watchlistBox" spacing="14.0">
+                            <padding>
+                                <Insets top="2.0" right="4.0" bottom="8.0" left="2.0" />
+                            </padding>
+                        </VBox>
                     </content>
                 </ScrollPane>
             </VBox>
-            <VBox fx:id="watchedView" spacing="16.0" visible="false" managed="false">
-                <Label text="Watched"
-                       style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+
+            <VBox fx:id="watchedView"
+                  spacing="18.0"
+                  visible="false"
+                  managed="false"
+                  styleClass="page">
+                <VBox spacing="4.0">
+                    <Label text="Watched" styleClass="page-title" />
+                    <Label text="Movies you have finished watching."
+                           styleClass="page-description" />
+                </VBox>
                 <Label fx:id="watchedFeedbackLabel"
                        text="You have not marked any movies as watched."
-                       wrapText="true" />
-                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+                       wrapText="true"
+                       styleClass="feedback-text" />
+                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll">
                     <content>
-                        <VBox fx:id="watchedBox" spacing="10.0" />
+                        <VBox fx:id="watchedBox" spacing="14.0">
+                            <padding>
+                                <Insets top="2.0" right="4.0" bottom="8.0" left="2.0" />
+                            </padding>
+                        </VBox>
                     </content>
                 </ScrollPane>
             </VBox>

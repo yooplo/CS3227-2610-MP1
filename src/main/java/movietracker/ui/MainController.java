@@ -7,14 +7,17 @@ import java.util.Objects;
 import java.util.Optional;
 
 import javafx.concurrent.Task;
+import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.geometry.Pos;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import movietracker.application.MovieCollectionManager;
 import movietracker.application.MovieCollectionManager.MutationResult;
@@ -34,6 +37,9 @@ public class MainController {
     }
 
     private static final DateTimeFormatter RELEASE_DATE_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
+    private static final PseudoClass ERROR_STATE = PseudoClass.getPseudoClass("error");
+    private static final PseudoClass SELECTED_STATE = PseudoClass.getPseudoClass("selected");
+    private static final int RESULT_OVERVIEW_LIMIT = 180;
     private static final String SAVE_FAILURE_MESSAGE = "Your change is available for this session, "
             + "but it could not be saved. Check access to the data folder.";
     private static final String PERSISTENCE_DISABLED_MESSAGE = "Saved movie data could not be loaded. "
@@ -115,6 +121,15 @@ public class MainController {
     @FXML
     private Label storageFeedbackLabel;
 
+    @FXML
+    private Button searchNavButton;
+
+    @FXML
+    private Button watchlistNavButton;
+
+    @FXML
+    private Button watchedNavButton;
+
     public MainController(
             MovieApiService movieApiService,
             MovieCollectionManager movieCollectionManager,
@@ -140,13 +155,13 @@ public class MainController {
         String query = searchField.getText().strip();
         if (query.isEmpty()) {
             resultsBox.getChildren().clear();
-            feedbackLabel.setText("Enter a movie title or keyword to search.");
+            setFeedback(feedbackLabel, "Enter a movie title or keyword to search.", false);
             return;
         }
 
         setSearchInProgress(true);
         resultsBox.getChildren().clear();
-        feedbackLabel.setText("Searching for movies...");
+        setFeedback(feedbackLabel, "Searching for movies...", false);
 
         Task<List<MovieInfo>> searchTask = new Task<>() {
             @Override
@@ -162,7 +177,10 @@ public class MainController {
         searchTask.setOnFailed(event -> {
             setSearchInProgress(false);
             resultsBox.getChildren().clear();
-            feedbackLabel.setText(MovieSearchMessages.forSearchFailure(searchTask.getException()));
+            setFeedback(
+                    feedbackLabel,
+                    MovieSearchMessages.forSearchFailure(searchTask.getException()),
+                    true);
         });
 
         Thread searchThread = new Thread(searchTask, "movie-search");
@@ -173,38 +191,56 @@ public class MainController {
     private void showResults(String query, List<MovieInfo> movies) {
         resultsBox.getChildren().clear();
         if (movies.isEmpty()) {
-            feedbackLabel.setText("No movies found for \"" + query + "\".");
+            setFeedback(feedbackLabel, "No movies found for \"" + query + "\".", false);
             return;
         }
 
-        feedbackLabel.setText("Found " + movies.size() + (movies.size() == 1 ? " movie." : " movies."));
+        setFeedback(
+                feedbackLabel,
+                "Found " + movies.size() + (movies.size() == 1 ? " movie." : " movies."),
+                false);
         movies.forEach(movie -> resultsBox.getChildren().add(createResultButton(movie)));
     }
 
     private Button createResultButton(MovieInfo movie) {
         Label title = new Label(movie.title());
-        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        title.setWrapText(true);
+        title.setMaxWidth(Double.MAX_VALUE);
+        title.getStyleClass().add("movie-card-title");
 
-        VBox result = new VBox(4.0, title);
-        result.setStyle("-fx-padding: 12px; -fx-background-color: #f3f4f6; "
-                + "-fx-background-radius: 6px;");
+        FlowPane metadata = new FlowPane(8.0, 8.0);
+        metadata.getChildren().add(createMetadataLabel(
+                movie.releaseDate() == null
+                        ? "Release date unavailable"
+                        : "Released " + RELEASE_DATE_FORMAT.format(movie.releaseDate()),
+                "metadata-pill"));
+        metadata.getChildren().add(createMetadataLabel(
+                movie.externalRating() == null
+                        ? "TMDB rating unavailable"
+                        : String.format(Locale.ROOT, "TMDB %.1f/10", movie.externalRating()),
+                "rating-pill"));
 
-        if (movie.releaseDate() != null) {
-            result.getChildren().add(new Label(
-                    "Release date: " + RELEASE_DATE_FORMAT.format(movie.releaseDate())));
+        VBox information = new VBox(8.0, title, metadata);
+        HBox.setHgrow(information, Priority.ALWAYS);
+
+        String overview = summarizeOverview(movie.overview());
+        if (overview != null) {
+            Label overviewLabel = new Label(overview);
+            overviewLabel.setWrapText(true);
+            overviewLabel.setMaxWidth(Double.MAX_VALUE);
+            overviewLabel.getStyleClass().add("movie-card-overview");
+            information.getChildren().add(overviewLabel);
         }
-        if (movie.externalRating() != null) {
-            result.getChildren().add(new Label(String.format(
-                    Locale.ROOT,
-                    "TMDB rating: %.1f/10",
-                    movie.externalRating())));
-        }
+
+        HBox result = new HBox(16.0, createPosterPlaceholder(78.0, 110.0), information);
+        result.setAlignment(Pos.TOP_LEFT);
 
         Button resultButton = new Button();
         resultButton.setGraphic(result);
         resultButton.setMaxWidth(Double.MAX_VALUE);
         resultButton.setAlignment(Pos.CENTER_LEFT);
-        resultButton.setStyle("-fx-padding: 0; -fx-background-color: transparent;");
+        resultButton.getStyleClass().addAll("movie-card-button", "movie-card");
+        resultButton.setAccessibleText("View details for " + movie.title());
         resultButton.setOnAction(event -> loadMovieDetails(movie));
         return resultButton;
     }
@@ -224,7 +260,7 @@ public class MainController {
         currentMovieDetails = null;
         watchlistActionLabel.setText("");
         detailsTitleLabel.setText(selectedMovie.title());
-        detailsFeedbackLabel.setText("Loading movie details...");
+        setFeedback(detailsFeedbackLabel, "Loading movie details...", false);
 
         Task<MovieInfo> detailsTask = new Task<>() {
             @Override
@@ -249,8 +285,10 @@ public class MainController {
             setDetailsInProgress(false);
             clearDetails();
             detailsTitleLabel.setText(selectedMovie.title());
-            detailsFeedbackLabel.setText(
-                    MovieSearchMessages.forDetailsFailure(detailsTask.getException()));
+            setFeedback(
+                    detailsFeedbackLabel,
+                    MovieSearchMessages.forDetailsFailure(detailsTask.getException()),
+                    true);
         });
 
         Thread detailsThread = new Thread(detailsTask, "movie-details");
@@ -260,10 +298,11 @@ public class MainController {
 
     private void showMovieDetails(MovieInfo movie) {
         currentMovieDetails = movie;
-        detailsFeedbackLabel.setText("");
+        setFeedback(detailsFeedbackLabel, "", false);
         detailsTitleLabel.setText(movie.title());
         detailsReleaseDateLabel.setText(MovieDetailsText.releaseDate(movie));
         detailsRatingLabel.setText(MovieDetailsText.rating(movie));
+        setDetailMetadataVisible(true);
         detailsOverviewLabel.setText(MovieDetailsText.overview(movie));
         updateAddToWatchlistState(movie.tmdbId());
     }
@@ -272,6 +311,7 @@ public class MainController {
         detailsTitleLabel.setText("");
         detailsReleaseDateLabel.setText("");
         detailsRatingLabel.setText("");
+        setDetailMetadataVisible(false);
         detailsOverviewLabel.setText("");
         addToWatchlistButton.setDisable(true);
     }
@@ -346,10 +386,11 @@ public class MainController {
         watchlistMovies.forEach(movie -> watchlistBox.getChildren().add(createWatchlistEntry(movie)));
     }
 
-    private HBox createWatchlistEntry(Movie movie) {
-        VBox information = createSavedMovieInformation(movie);
+    private VBox createWatchlistEntry(Movie movie) {
+        HBox information = createSavedMovieInformation(movie, "Watchlist", false);
 
         Button watchedButton = new Button("Mark as Watched");
+        watchedButton.getStyleClass().add("primary-button");
         watchedButton.setOnAction(event -> {
             MutationResult result = movieCollectionManager.markAsWatched(movie.getTmdbId());
             refreshWatchlist();
@@ -358,16 +399,16 @@ public class MainController {
         });
 
         Button removeButton = new Button("Remove");
+        removeButton.getStyleClass().add("danger-button");
         removeButton.setOnAction(event -> {
             MutationResult result = movieCollectionManager.remove(movie.getTmdbId());
             refreshWatchlist();
             showPersistenceResult(result);
         });
 
-        HBox entry = new HBox(12.0, information, watchedButton, removeButton);
-        entry.setAlignment(Pos.CENTER_LEFT);
-        entry.setStyle("-fx-padding: 12px; -fx-background-color: #f3f4f6; "
-                + "-fx-background-radius: 6px;");
+        FlowPane actions = new FlowPane(8.0, 8.0, watchedButton, removeButton);
+        VBox entry = new VBox(14.0, information, actions);
+        entry.getStyleClass().addAll("movie-card", "saved-movie-card");
         return entry;
     }
 
@@ -387,32 +428,41 @@ public class MainController {
         watchedMovies.forEach(movie -> watchedBox.getChildren().add(createWatchedEntry(movie)));
     }
 
-    private HBox createWatchedEntry(Movie movie) {
-        VBox information = createSavedMovieInformation(movie);
-        HBox entry = new HBox(12.0, information);
-        entry.setAlignment(Pos.CENTER_LEFT);
-        entry.setStyle("-fx-padding: 12px; -fx-background-color: #f3f4f6; "
-                + "-fx-background-radius: 6px;");
+    private VBox createWatchedEntry(Movie movie) {
+        HBox information = createSavedMovieInformation(movie, "Watched", true);
+        VBox entry = new VBox(information);
+        entry.getStyleClass().addAll("movie-card", "saved-movie-card");
         return entry;
     }
 
-    private VBox createSavedMovieInformation(Movie movie) {
+    private HBox createSavedMovieInformation(Movie movie, String status, boolean watched) {
         Label title = new Label(movie.getTitle());
-        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
-        VBox information = new VBox(4.0, title);
-        HBox.setHgrow(information, Priority.ALWAYS);
+        title.setWrapText(true);
+        title.setMaxWidth(Double.MAX_VALUE);
+        title.getStyleClass().add("movie-card-title");
+
+        FlowPane metadata = new FlowPane(8.0, 8.0);
+        Label statusLabel = createMetadataLabel(status, "status-pill");
+        if (watched) {
+            statusLabel.getStyleClass().add("watched-status-pill");
+        }
+        metadata.getChildren().add(statusLabel);
 
         if (movie.getReleaseDate() != null) {
-            information.getChildren().add(new Label(
-                    "Release date: " + RELEASE_DATE_FORMAT.format(movie.getReleaseDate())));
+            metadata.getChildren().add(createMetadataLabel(
+                    "Released " + RELEASE_DATE_FORMAT.format(movie.getReleaseDate()),
+                    "metadata-pill"));
         }
         if (movie.getExternalRating() != null) {
-            information.getChildren().add(new Label(String.format(
-                    Locale.ROOT,
-                    "TMDB rating: %.1f/10",
-                    movie.getExternalRating())));
+            metadata.getChildren().add(createMetadataLabel(
+                    String.format(Locale.ROOT, "TMDB %.1f/10", movie.getExternalRating()),
+                    "rating-pill"));
         }
 
+        VBox text = new VBox(8.0, title, metadata);
+        HBox.setHgrow(text, Priority.ALWAYS);
+        HBox information = new HBox(16.0, createPosterPlaceholder(70.0, 98.0), text);
+        information.setAlignment(Pos.TOP_LEFT);
         return information;
     }
 
@@ -454,10 +504,63 @@ public class MainController {
         setViewState(detailsView, view == View.DETAILS);
         setViewState(watchlistView, view == View.WATCHLIST);
         setViewState(watchedView, view == View.WATCHED);
+        updateNavigationState(
+                searchNavButton,
+                view == View.SEARCH || view == View.DETAILS,
+                "Search");
+        updateNavigationState(watchlistNavButton, view == View.WATCHLIST, "Watchlist");
+        updateNavigationState(watchedNavButton, view == View.WATCHED, "Watched");
     }
 
     private void setViewState(VBox view, boolean shown) {
         view.setVisible(shown);
         view.setManaged(shown);
+    }
+
+    private Label createMetadataLabel(String text, String styleClass) {
+        Label label = new Label(text);
+        label.getStyleClass().add(styleClass);
+        return label;
+    }
+
+    private StackPane createPosterPlaceholder(double width, double height) {
+        Label placeholderText = new Label("POSTER");
+        placeholderText.getStyleClass().add("poster-placeholder-text");
+
+        StackPane placeholder = new StackPane(placeholderText);
+        placeholder.setMinSize(width, height);
+        placeholder.setPrefSize(width, height);
+        placeholder.setMaxSize(width, height);
+        placeholder.getStyleClass().add("poster-placeholder");
+        return placeholder;
+    }
+
+    private String summarizeOverview(String overview) {
+        if (overview == null || overview.isBlank()) {
+            return null;
+        }
+
+        String normalized = overview.strip();
+        if (normalized.length() <= RESULT_OVERVIEW_LIMIT) {
+            return normalized;
+        }
+        return normalized.substring(0, RESULT_OVERVIEW_LIMIT - 1).stripTrailing() + "…";
+    }
+
+    private void setFeedback(Label label, String message, boolean error) {
+        label.setText(message);
+        label.pseudoClassStateChanged(ERROR_STATE, error);
+    }
+
+    private void setDetailMetadataVisible(boolean visible) {
+        detailsReleaseDateLabel.setVisible(visible);
+        detailsReleaseDateLabel.setManaged(visible);
+        detailsRatingLabel.setVisible(visible);
+        detailsRatingLabel.setManaged(visible);
+    }
+
+    private void updateNavigationState(Button button, boolean selected, String name) {
+        button.pseudoClassStateChanged(SELECTED_STATE, selected);
+        button.setAccessibleText(selected ? name + ", current view" : name);
     }
 }

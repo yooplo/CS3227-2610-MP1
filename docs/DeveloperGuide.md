@@ -1,10 +1,10 @@
 # Movie Tracker Developer Guide
 
-Movie Tracker is still under development. Movie search and movie details are connected to the graphical interface; watchlist workflows and persistence are not yet available through the GUI.
+Movie Tracker is still under development. Movie search, details, and an in-memory watchlist are connected to the graphical interface. Watched-status workflows and persistence are not yet available through the GUI.
 
 ## Current architecture
 
-The application uses Java 21, Gradle, JavaFX, and FXML. `Launcher` starts `MovieTrackerApplication`, which creates the production `TmdbMovieApiService` and injects it into `MainController` through the `FXMLLoader` controller factory.
+The application uses Java 21, Gradle, JavaFX, and FXML. `Launcher` starts `MovieTrackerApplication`, which creates one production `TmdbMovieApiService` and one session-scoped `MovieCollection`. Both are injected into `MainController` through the `FXMLLoader` controller factory.
 
 The core domain contains application-level movie information, saved movies, watch statuses, and collection operations. JUnit 5 tests cover the domain and service layers.
 
@@ -26,7 +26,13 @@ Each search result is a selectable button carrying its application-level `MovieI
 
 The details view displays safe fallback text for missing dates, ratings, and overviews. `MovieDetailsText` keeps that non-GUI formatting logic independently testable. Returning to the search view only toggles view visibility, preserving the previous query and result controls without another API search.
 
-Persistence and user-facing watchlist workflows have not been implemented.
+## In-memory watchlist
+
+`MovieFactory` performs the single application-level conversion from `MovieInfo` into a saved `Movie`, copying all current metadata and assigning `WatchStatus.WATCHLIST`. `MovieCollection.add` uses the TMDB ID to reject duplicates without replacing the existing movie or status.
+
+The Watchlist view is refreshed from `MovieCollection.getWatchlistMovies` whenever it is opened and after removal. Each Remove action captures the entry's TMDB ID and calls `MovieCollection.remove`, then refreshes the view immediately. Search controls and result nodes remain in memory while the Watchlist view is displayed.
+
+There is no storage integration yet. The single collection exists only for the lifetime of the running application, and all saved movies are lost on exit.
 
 ## Acknowledgements
 

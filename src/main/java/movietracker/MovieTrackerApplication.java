@@ -10,6 +10,7 @@ import javafx.stage.Stage;
 import movietracker.service.MovieApiService;
 import movietracker.service.TmdbMovieApiService;
 import movietracker.ui.MainController;
+import movietracker.model.MovieCollection;
 
 public class MovieTrackerApplication extends Application {
     private static final String APPLICATION_TITLE = "Movie Tracker";
@@ -18,10 +19,11 @@ public class MovieTrackerApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         MovieApiService movieApiService = new TmdbMovieApiService();
+        MovieCollection movieCollection = new MovieCollection();
         FXMLLoader loader = new FXMLLoader(MovieTrackerApplication.class.getResource(MAIN_VIEW));
         loader.setControllerFactory(controllerType -> {
             if (controllerType == MainController.class) {
-                return new MainController(movieApiService);
+                return new MainController(movieApiService, movieCollection);
             }
             throw new IllegalArgumentException("Unsupported controller: " + controllerType.getName());
         });

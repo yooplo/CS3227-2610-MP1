@@ -12,8 +12,13 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.geometry.Pos;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import movietracker.model.MovieInfo;
+import movietracker.model.Movie;
+import movietracker.model.MovieCollection;
+import movietracker.model.MovieFactory;
 import movietracker.service.MovieApiService;
 import movietracker.service.MovieServiceException;
 
@@ -21,6 +26,8 @@ public class MainController {
     private static final DateTimeFormatter RELEASE_DATE_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
 
     private final MovieApiService movieApiService;
+    private final MovieCollection movieCollection;
+    private MovieInfo currentMovieDetails;
 
     @FXML
     private TextField searchField;
@@ -64,8 +71,24 @@ public class MainController {
     @FXML
     private Label detailsOverviewLabel;
 
-    public MainController(MovieApiService movieApiService) {
+    @FXML
+    private Button addToWatchlistButton;
+
+    @FXML
+    private Label watchlistActionLabel;
+
+    @FXML
+    private VBox watchlistView;
+
+    @FXML
+    private VBox watchlistBox;
+
+    @FXML
+    private Label watchlistFeedbackLabel;
+
+    public MainController(MovieApiService movieApiService, MovieCollection movieCollection) {
         this.movieApiService = Objects.requireNonNull(movieApiService);
+        this.movieCollection = Objects.requireNonNull(movieCollection);
     }
 
     @FXML
@@ -74,6 +97,7 @@ public class MainController {
         loadingIndicator.setManaged(false);
         detailsLoadingIndicator.setVisible(false);
         detailsLoadingIndicator.setManaged(false);
+        addToWatchlistButton.setDisable(true);
         showSearchView();
     }
 
@@ -155,6 +179,8 @@ public class MainController {
         showDetailsView();
         setDetailsInProgress(true);
         clearDetails();
+        currentMovieDetails = null;
+        watchlistActionLabel.setText("");
         detailsTitleLabel.setText(selectedMovie.title());
         detailsFeedbackLabel.setText("Loading movie details...");
 
@@ -183,11 +209,13 @@ public class MainController {
     }
 
     private void showMovieDetails(MovieInfo movie) {
+        currentMovieDetails = movie;
         detailsFeedbackLabel.setText("");
         detailsTitleLabel.setText(movie.title());
         detailsReleaseDateLabel.setText(MovieDetailsText.releaseDate(movie));
         detailsRatingLabel.setText(MovieDetailsText.rating(movie));
         detailsOverviewLabel.setText(MovieDetailsText.overview(movie));
+        updateAddToWatchlistState(movie.tmdbId());
     }
 
     private void clearDetails() {
@@ -195,6 +223,7 @@ public class MainController {
         detailsReleaseDateLabel.setText("");
         detailsRatingLabel.setText("");
         detailsOverviewLabel.setText("");
+        addToWatchlistButton.setDisable(true);
     }
 
     @FXML
@@ -207,6 +236,8 @@ public class MainController {
         searchView.setManaged(true);
         detailsView.setVisible(false);
         detailsView.setManaged(false);
+        watchlistView.setVisible(false);
+        watchlistView.setManaged(false);
     }
 
     private void showDetailsView() {
@@ -214,12 +245,103 @@ public class MainController {
         searchView.setManaged(false);
         detailsView.setVisible(true);
         detailsView.setManaged(true);
+        watchlistView.setVisible(false);
+        watchlistView.setManaged(false);
+    }
+
+    @FXML
+    private void handleShowSearch() {
+        showSearchView();
+    }
+
+    @FXML
+    private void handleShowWatchlist() {
+        refreshWatchlist();
+        searchView.setVisible(false);
+        searchView.setManaged(false);
+        detailsView.setVisible(false);
+        detailsView.setManaged(false);
+        watchlistView.setVisible(true);
+        watchlistView.setManaged(true);
+    }
+
+    @FXML
+    private void handleAddToWatchlist() {
+        if (currentMovieDetails == null) {
+            return;
+        }
+
+        Movie movie = MovieFactory.fromMovieInfo(currentMovieDetails);
+        if (movieCollection.add(movie)) {
+            watchlistActionLabel.setText("Added to your watchlist.");
+            addToWatchlistButton.setDisable(true);
+        } else {
+            watchlistActionLabel.setText("This movie is already in your collection.");
+            addToWatchlistButton.setDisable(true);
+        }
+    }
+
+    private void updateAddToWatchlistState(int tmdbId) {
+        boolean alreadySaved = movieCollection.findByTmdbId(tmdbId).isPresent();
+        addToWatchlistButton.setDisable(alreadySaved);
+        watchlistActionLabel.setText(alreadySaved
+                ? "This movie is already in your collection."
+                : "");
+    }
+
+    private void refreshWatchlist() {
+        List<Movie> watchlistMovies = movieCollection.getWatchlistMovies();
+        watchlistBox.getChildren().clear();
+
+        if (watchlistMovies.isEmpty()) {
+            watchlistFeedbackLabel.setText("Your watchlist is empty.");
+            return;
+        }
+
+        watchlistFeedbackLabel.setText(
+                watchlistMovies.size() + (watchlistMovies.size() == 1
+                        ? " movie in your watchlist."
+                        : " movies in your watchlist."));
+        watchlistMovies.forEach(movie -> watchlistBox.getChildren().add(createWatchlistEntry(movie)));
+    }
+
+    private HBox createWatchlistEntry(Movie movie) {
+        Label title = new Label(movie.getTitle());
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        VBox information = new VBox(4.0, title);
+        HBox.setHgrow(information, Priority.ALWAYS);
+
+        if (movie.getReleaseDate() != null) {
+            information.getChildren().add(new Label(
+                    "Release date: " + RELEASE_DATE_FORMAT.format(movie.getReleaseDate())));
+        }
+        if (movie.getExternalRating() != null) {
+            information.getChildren().add(new Label(String.format(
+                    Locale.ROOT,
+                    "TMDB rating: %.1f/10",
+                    movie.getExternalRating())));
+        }
+
+        Button removeButton = new Button("Remove");
+        removeButton.setOnAction(event -> {
+            movieCollection.remove(movie.getTmdbId());
+            refreshWatchlist();
+        });
+
+        HBox entry = new HBox(12.0, information, removeButton);
+        entry.setAlignment(Pos.CENTER_LEFT);
+        entry.setStyle("-fx-padding: 12px; -fx-background-color: #f3f4f6; "
+                + "-fx-background-radius: 6px;");
+        return entry;
     }
 
     private void setDetailsInProgress(boolean inProgress) {
         backButton.setDisable(inProgress);
         detailsLoadingIndicator.setVisible(inProgress);
         detailsLoadingIndicator.setManaged(inProgress);
+        if (inProgress) {
+            addToWatchlistButton.setDisable(true);
+        }
     }
 
     private void setSearchInProgress(boolean inProgress) {

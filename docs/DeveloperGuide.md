@@ -1,10 +1,10 @@
 # Movie Tracker Developer Guide
 
-Movie Tracker is still under development. The domain model and TMDB movie-information service are implemented, but they are not connected to the graphical interface yet.
+Movie Tracker is still under development. Movie search is connected to the graphical interface; movie details, watchlist workflows, and persistence are not yet available through the GUI.
 
 ## Current architecture
 
-The application uses Java 21, Gradle, JavaFX, and FXML. `Launcher` starts `MovieTrackerApplication`, which loads `MainView.fxml`. The FXML view is associated with `MainController`.
+The application uses Java 21, Gradle, JavaFX, and FXML. `Launcher` starts `MovieTrackerApplication`, which creates the production `TmdbMovieApiService` and injects it into `MainController` through the `FXMLLoader` controller factory.
 
 The core domain contains application-level movie information, saved movies, watch statuses, and collection operations. JUnit 5 tests cover the domain and service layers.
 
@@ -14,7 +14,13 @@ The core domain contains application-level movie information, saved movies, watc
 
 The service converts network, timeout, response, authentication, rate-limit, not-found, and other HTTP failures into `MovieServiceException`. Automated tests use local JSON and do not require a token or network access.
 
-The GUI integration, persistence, and user-facing watchlist workflows have not been implemented.
+## Search GUI
+
+`MainController` depends on the `MovieApiService` interface and contains no TMDB-specific HTTP or JSON handling. It runs searches in a JavaFX `Task` on a daemon background thread. JavaFX task handlers then update loading state, feedback, and result controls on the JavaFX Application Thread.
+
+`MovieSearchMessages` converts service failure types into user-facing text without exposing low-level errors. Its mapping is covered by automated tests. The remaining JavaFX interaction is verified manually.
+
+Movie details, persistence, and user-facing watchlist workflows have not been implemented.
 
 ## Acknowledgements
 

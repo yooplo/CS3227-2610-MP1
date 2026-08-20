@@ -19,13 +19,20 @@
         <Insets top="24.0" right="24.0" bottom="24.0" left="24.0" />
     </padding>
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="8.0">
-            <Label text="Movie Tracker" style="-fx-font-size: 28px; -fx-font-weight: bold;" />
-            <Region HBox.hgrow="ALWAYS" />
-            <Button text="Search" onAction="#handleShowSearch" />
-            <Button text="Watchlist" onAction="#handleShowWatchlist" />
-            <Button text="Watched" onAction="#handleShowWatched" />
-        </HBox>
+        <VBox spacing="8.0">
+            <HBox alignment="CENTER_LEFT" spacing="8.0">
+                <Label text="Movie Tracker" style="-fx-font-size: 28px; -fx-font-weight: bold;" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button text="Search" onAction="#handleShowSearch" />
+                <Button text="Watchlist" onAction="#handleShowWatchlist" />
+                <Button text="Watched" onAction="#handleShowWatched" />
+            </HBox>
+            <Label fx:id="storageFeedbackLabel"
+                   managed="false"
+                   visible="false"
+                   wrapText="true"
+                   style="-fx-text-fill: #9a3412; -fx-background-color: #ffedd5; -fx-padding: 8px;" />
+        </VBox>
     </top>
     <center>
         <StackPane>

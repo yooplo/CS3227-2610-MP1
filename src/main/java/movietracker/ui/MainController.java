@@ -16,9 +16,10 @@ import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import movietracker.application.MovieCollectionManager;
+import movietracker.application.MovieCollectionManager.MutationResult;
 import movietracker.model.MovieInfo;
 import movietracker.model.Movie;
-import movietracker.model.MovieCollection;
 import movietracker.model.MovieFactory;
 import movietracker.model.WatchStatus;
 import movietracker.service.MovieApiService;
@@ -26,9 +27,14 @@ import movietracker.service.MovieServiceException;
 
 public class MainController {
     private static final DateTimeFormatter RELEASE_DATE_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
+    private static final String SAVE_FAILURE_MESSAGE = "Your change is available for this session, "
+            + "but it could not be saved. Check access to the data folder.";
+    private static final String PERSISTENCE_DISABLED_MESSAGE = "Saved movie data could not be loaded. "
+            + "The existing data file is preserved, and changes will only last for this session.";
 
     private final MovieApiService movieApiService;
-    private final MovieCollection movieCollection;
+    private final MovieCollectionManager movieCollectionManager;
+    private final String startupWarning;
     private MovieInfo currentMovieDetails;
 
     @FXML
@@ -97,9 +103,16 @@ public class MainController {
     @FXML
     private Label watchedFeedbackLabel;
 
-    public MainController(MovieApiService movieApiService, MovieCollection movieCollection) {
+    @FXML
+    private Label storageFeedbackLabel;
+
+    public MainController(
+            MovieApiService movieApiService,
+            MovieCollectionManager movieCollectionManager,
+            String startupWarning) {
         this.movieApiService = Objects.requireNonNull(movieApiService);
-        this.movieCollection = Objects.requireNonNull(movieCollection);
+        this.movieCollectionManager = Objects.requireNonNull(movieCollectionManager);
+        this.startupWarning = Objects.requireNonNull(startupWarning);
     }
 
     @FXML
@@ -109,6 +122,7 @@ public class MainController {
         detailsLoadingIndicator.setVisible(false);
         detailsLoadingIndicator.setManaged(false);
         addToWatchlistButton.setDisable(true);
+        showStorageFeedback(startupWarning);
         showSearchView();
     }
 
@@ -302,9 +316,11 @@ public class MainController {
         }
 
         Movie movie = MovieFactory.fromMovieInfo(currentMovieDetails);
-        if (movieCollection.add(movie)) {
+        MutationResult result = movieCollectionManager.add(movie);
+        if (result != MutationResult.NO_CHANGE) {
             watchlistActionLabel.setText("Added to your watchlist.");
             addToWatchlistButton.setDisable(true);
+            showPersistenceResult(result);
         } else {
             updateAddToWatchlistState(movie.getTmdbId());
             addToWatchlistButton.setDisable(true);
@@ -312,7 +328,7 @@ public class MainController {
     }
 
     private void updateAddToWatchlistState(int tmdbId) {
-        Optional<Movie> savedMovie = movieCollection.findByTmdbId(tmdbId);
+        Optional<Movie> savedMovie = movieCollectionManager.findByTmdbId(tmdbId);
         if (savedMovie.isEmpty()) {
             addToWatchlistButton.setDisable(false);
             watchlistActionLabel.setText("");
@@ -326,7 +342,7 @@ public class MainController {
     }
 
     private void refreshWatchlist() {
-        List<Movie> watchlistMovies = movieCollection.getWatchlistMovies();
+        List<Movie> watchlistMovies = movieCollectionManager.getWatchlistMovies();
         watchlistBox.getChildren().clear();
 
         if (watchlistMovies.isEmpty()) {
@@ -346,15 +362,17 @@ public class MainController {
 
         Button watchedButton = new Button("Mark as Watched");
         watchedButton.setOnAction(event -> {
-            movieCollection.markAsWatched(movie.getTmdbId());
+            MutationResult result = movieCollectionManager.markAsWatched(movie.getTmdbId());
             refreshWatchlist();
             refreshWatched();
+            showPersistenceResult(result);
         });
 
         Button removeButton = new Button("Remove");
         removeButton.setOnAction(event -> {
-            movieCollection.remove(movie.getTmdbId());
+            MutationResult result = movieCollectionManager.remove(movie.getTmdbId());
             refreshWatchlist();
+            showPersistenceResult(result);
         });
 
         HBox entry = new HBox(12.0, information, watchedButton, removeButton);
@@ -365,7 +383,7 @@ public class MainController {
     }
 
     private void refreshWatched() {
-        List<Movie> watchedMovies = movieCollection.getWatchedMovies();
+        List<Movie> watchedMovies = movieCollectionManager.getWatchedMovies();
         watchedBox.getChildren().clear();
 
         if (watchedMovies.isEmpty()) {
@@ -423,5 +441,22 @@ public class MainController {
         searchButton.setDisable(inProgress);
         loadingIndicator.setVisible(inProgress);
         loadingIndicator.setManaged(inProgress);
+    }
+
+    private void showPersistenceResult(MutationResult result) {
+        if (result == MutationResult.SAVE_FAILED) {
+            showStorageFeedback(SAVE_FAILURE_MESSAGE);
+        } else if (result == MutationResult.PERSISTENCE_DISABLED) {
+            showStorageFeedback(PERSISTENCE_DISABLED_MESSAGE);
+        } else if (result == MutationResult.SUCCESS) {
+            showStorageFeedback("");
+        }
+    }
+
+    private void showStorageFeedback(String message) {
+        boolean hasMessage = !message.isBlank();
+        storageFeedbackLabel.setText(message);
+        storageFeedbackLabel.setVisible(hasMessage);
+        storageFeedbackLabel.setManaged(hasMessage);
     }
 }

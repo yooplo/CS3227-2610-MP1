@@ -1,8 +1,8 @@
 # Movie Tracker User Guide
 
-Movie Tracker is still under development. The current application supports searching TMDB, viewing movie details, and maintaining in-memory Watchlist and Watched collections for the current application session.
+Movie Tracker is still under development. The current application supports searching TMDB, viewing movie details, and maintaining persistent Watchlist and Watched collections.
 
-Local persistence has not been implemented yet. **Watchlist and Watched contents are lost when Movie Tracker exits.** Moving a watched movie back to the Watchlist is not currently supported.
+Watchlist and Watched contents are saved locally and restored when Movie Tracker starts again. Moving a watched movie back to the Watchlist is not currently supported.
 
 ## Prerequisites
 
@@ -30,6 +30,10 @@ On macOS or Linux:
 ```bash
 ./gradlew run
 ```
+
+Saved movie data is stored relative to the directory from which the application is run at `data/movies.json`. The directory and file are created automatically after the first successful collection change; no manual setup is needed.
+
+If existing saved data is corrupted or invalid, Movie Tracker preserves that file, starts with a safe empty in-memory collection, and displays a warning. Changes made during that run are not saved, preventing accidental replacement of the corrupted file. Keep a copy of the file before repairing or removing it manually.
 
 ## Current peer-testing scope
 
@@ -60,6 +64,8 @@ The current watched-movies workflow is:
 3. Confirm that it disappears from Watchlist immediately.
 4. Open **Watched** and confirm that the movie appears with its available release date and TMDB rating.
 5. Search for and open that movie again; confirm that the details view says it is already watched and does not allow it to be added to Watchlist again.
+
+To verify persistence, close and restart Movie Tracker after adding a movie or marking it as watched. The movie should return in the same view and with the same status. Removing a Watchlist movie is also saved immediately.
 
 Also verify that:
 

@@ -1,15 +1,21 @@
 # Movie Tracker Developer Guide
 
-Movie Tracker is still under development. This document currently describes only the initial project setup; it does not claim that movie-tracking features are implemented.
+Movie Tracker is still under development. The domain model and TMDB movie-information service are implemented, but they are not connected to the graphical interface yet.
 
 ## Current architecture
 
 The application uses Java 21, Gradle, JavaFX, and FXML. `Launcher` starts `MovieTrackerApplication`, which loads `MainView.fxml`. The FXML view is associated with `MainController`.
 
-JUnit 5 is configured for future automated tests. Jackson is configured as a dependency for future JSON processing but is not used in the current increment.
+The core domain contains application-level movie information, saved movies, watch statuses, and collection operations. JUnit 5 tests cover the domain and service layers.
 
-TMDB integration, domain models, watchlists, watched status, and persistence have not been implemented.
+## TMDB integration
+
+`MovieApiService` defines application-level search and movie-detail operations. `TmdbMovieApiService` implements those operations with Java's `HttpClient`, authenticates with the `TMDB_API_TOKEN` environment variable, and uses Jackson to convert TMDB JSON into `MovieInfo`. TMDB-specific parsing remains inside the service package.
+
+The service converts network, timeout, response, authentication, rate-limit, not-found, and other HTTP failures into `MovieServiceException`. Automated tests use local JSON and do not require a token or network access.
+
+The GUI integration, persistence, and user-facing watchlist workflows have not been implemented.
 
 ## Acknowledgements
 
-The project currently depends on JavaFX, Jackson, JUnit 5, Gradle, and the Foojay Gradle toolchain resolver. Specific external API acknowledgements will be added when API integration is implemented.
+The project currently depends on JavaFX, Jackson, JUnit 5, Gradle, and the Foojay Gradle toolchain resolver. Movie metadata is provided by [The Movie Database (TMDB)](https://www.themoviedb.org/); this product is not endorsed or certified by TMDB.

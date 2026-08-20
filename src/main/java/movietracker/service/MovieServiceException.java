@@ -9,7 +9,8 @@ public class MovieServiceException extends Exception {
         INVALID_RESPONSE,
         AUTHENTICATION,
         RATE_LIMIT,
-        NOT_FOUND
+        NOT_FOUND,
+        HTTP_ERROR
     }
 
     private final FailureType failureType;

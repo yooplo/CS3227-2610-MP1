@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
+import javafx.beans.binding.Bindings;
 import javafx.concurrent.Task;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
@@ -40,6 +41,7 @@ public class MainController {
     private static final PseudoClass ERROR_STATE = PseudoClass.getPseudoClass("error");
     private static final PseudoClass SELECTED_STATE = PseudoClass.getPseudoClass("selected");
     private static final int RESULT_OVERVIEW_LIMIT = 180;
+    private static final double MOVIE_CARD_HORIZONTAL_INSETS = 34.0;
     private static final String SAVE_FAILURE_MESSAGE = "Your change is available for this session, "
             + "but it could not be saved. Check access to the data folder.";
     private static final String PERSISTENCE_DISABLED_MESSAGE = "Saved movie data could not be loaded. "
@@ -48,6 +50,7 @@ public class MainController {
     private final MovieApiService movieApiService;
     private final MovieCollectionManager movieCollectionManager;
     private final String startupWarning;
+    private final PosterImageLoader posterImageLoader = new PosterImageLoader();
     private MovieInfo currentMovieDetails;
     private Integer loadingDetailsTmdbId;
     private long detailsRequestVersion;
@@ -120,6 +123,9 @@ public class MainController {
 
     @FXML
     private Label storageFeedbackLabel;
+
+    @FXML
+    private StackPane detailsPosterContainer;
 
     @FXML
     private Button searchNavButton;
@@ -232,13 +238,19 @@ public class MainController {
             information.getChildren().add(overviewLabel);
         }
 
-        HBox result = new HBox(16.0, createPosterPlaceholder(78.0, 110.0), information);
+        HBox result = new HBox(
+                16.0,
+                posterImageLoader.createPoster(movie.posterPath(), 76.0, 114.0),
+                information);
         result.setAlignment(Pos.TOP_LEFT);
 
         Button resultButton = new Button();
         resultButton.setGraphic(result);
         resultButton.setMaxWidth(Double.MAX_VALUE);
         resultButton.setAlignment(Pos.CENTER_LEFT);
+        result.prefWidthProperty().bind(Bindings.max(
+                0.0,
+                resultButton.widthProperty().subtract(MOVIE_CARD_HORIZONTAL_INSETS)));
         resultButton.getStyleClass().addAll("movie-card-button", "movie-card");
         resultButton.setAccessibleText("View details for " + movie.title());
         resultButton.setOnAction(event -> loadMovieDetails(movie));
@@ -257,6 +269,7 @@ public class MainController {
         showView(View.DETAILS);
         setDetailsInProgress(true);
         clearDetails();
+        showDetailsPoster(selectedMovie.posterPath());
         currentMovieDetails = null;
         watchlistActionLabel.setText("");
         detailsTitleLabel.setText(selectedMovie.title());
@@ -304,6 +317,7 @@ public class MainController {
         detailsRatingLabel.setText(MovieDetailsText.rating(movie));
         setDetailMetadataVisible(true);
         detailsOverviewLabel.setText(MovieDetailsText.overview(movie));
+        showDetailsPoster(movie.posterPath());
         updateAddToWatchlistState(movie.tmdbId());
     }
 
@@ -314,6 +328,7 @@ public class MainController {
         setDetailMetadataVisible(false);
         detailsOverviewLabel.setText("");
         addToWatchlistButton.setDisable(true);
+        showDetailsPoster(null);
     }
 
     @FXML
@@ -461,8 +476,12 @@ public class MainController {
 
         VBox text = new VBox(8.0, title, metadata);
         HBox.setHgrow(text, Priority.ALWAYS);
-        HBox information = new HBox(16.0, createPosterPlaceholder(70.0, 98.0), text);
+        HBox information = new HBox(
+                16.0,
+                posterImageLoader.createPoster(movie.getPosterPath(), 70.0, 105.0),
+                text);
         information.setAlignment(Pos.TOP_LEFT);
+        information.setMaxWidth(Double.MAX_VALUE);
         return information;
     }
 
@@ -523,18 +542,6 @@ public class MainController {
         return label;
     }
 
-    private StackPane createPosterPlaceholder(double width, double height) {
-        Label placeholderText = new Label("POSTER");
-        placeholderText.getStyleClass().add("poster-placeholder-text");
-
-        StackPane placeholder = new StackPane(placeholderText);
-        placeholder.setMinSize(width, height);
-        placeholder.setPrefSize(width, height);
-        placeholder.setMaxSize(width, height);
-        placeholder.getStyleClass().add("poster-placeholder");
-        return placeholder;
-    }
-
     private String summarizeOverview(String overview) {
         if (overview == null || overview.isBlank()) {
             return null;
@@ -562,5 +569,10 @@ public class MainController {
     private void updateNavigationState(Button button, boolean selected, String name) {
         button.pseudoClassStateChanged(SELECTED_STATE, selected);
         button.setAccessibleText(selected ? name + ", current view" : name);
+    }
+
+    private void showDetailsPoster(String posterPath) {
+        detailsPosterContainer.getChildren().setAll(
+                posterImageLoader.createPoster(posterPath, 124.0, 186.0));
     }
 }

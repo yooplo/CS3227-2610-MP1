@@ -22,6 +22,10 @@ HTTP 408 and 504 responses are classified as timeouts. Successful responses are 
 
 `MovieSearchMessages` converts service failure types into user-facing text without exposing low-level errors. Its mapping is covered by automated tests. The remaining JavaFX interaction is verified manually.
 
+The interface uses JavaFX layout containers rather than fixed coordinates. `BorderPane` divides the header and main content, page-level `VBox` containers grow vertically, and fitted `ScrollPane` controls handle result or collection overflow. Search-card graphics bind their preferred width to the available button width so titles and overviews wrap as the window changes size. Collection actions and metadata use `FlowPane` to wrap naturally.
+
+The stage has a 700×600 minimum size, preventing the poster-and-text layouts from being compressed below their usable desktop arrangement. Above that minimum, pages grow to a maximum readable content width, scrollable areas absorb additional height, and poster boxes retain fixed 2:3 thumbnail bounds while their `ImageView` nodes preserve source aspect ratio. No additional width breakpoint is currently necessary because these layout containers reflow continuously throughout the supported range.
+
 ## Movie details GUI
 
 Each search result is a selectable button carrying its application-level `MovieInfo`. Selecting it hides the search view without clearing it and starts a background JavaFX `Task` that calls `MovieApiService.getMovieDetails`. Success and failure handlers update the details view on the JavaFX Application Thread.
@@ -29,6 +33,18 @@ Each search result is a selectable button carrying its application-level `MovieI
 The controller tracks the active detail request. Re-selecting the same movie while it is loading does not issue a duplicate request, and a late result from an older request cannot overwrite a newer movie selection. View visibility is updated through one shared helper so Search, Details, Watchlist, and Watched cannot accidentally remain managed at the same time.
 
 The details view displays safe fallback text for missing dates, ratings, and overviews. `MovieDetailsText` keeps that non-GUI formatting logic independently testable. Returning to the search view only toggles view visibility, preserving the previous query and result controls without another API search.
+
+## Poster images
+
+The domain continues to store only TMDB's relative poster path. `PosterImageLoader` constructs presentation URLs using `https://image.tmdb.org/t/p/w342` and never writes a full URL back into `MovieInfo`, `Movie`, or persistent JSON.
+
+Posters use JavaFX `Image` background loading, so image retrieval does not block the JavaFX Application Thread. Each `ImageView` preserves the source aspect ratio and fits within view-specific bounds: compact search results, a larger details image, and consistent collection thumbnails.
+
+Every poster container starts with a labeled placeholder. The image is revealed only after loading completes successfully; missing paths, malformed paths, constructor failures, and background download errors leave the same placeholder visible without exposing an exception to the user.
+
+One `PosterImageLoader` belongs to the session-scoped `MainController`. It maintains a small least-recently-used cache of at most 100 JavaFX `Image` instances keyed by the constructed URL. Search, Details, Watchlist, and Watched can therefore reuse an image already requested during the same run. The cache is memory-only and is discarded at exit; poster files are never added to `data/movies.json` or written elsewhere on disk.
+
+URL-construction tests cover normal, missing, unsafe, and malformed poster paths without creating images or accessing the network. Image download success and failure remain manual GUI checks.
 
 ## Watchlist
 

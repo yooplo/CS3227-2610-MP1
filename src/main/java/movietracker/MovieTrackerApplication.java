@@ -18,6 +18,8 @@ import movietracker.ui.MainController;
 public class MovieTrackerApplication extends Application {
     private static final String APPLICATION_TITLE = "Movie Tracker";
     private static final String MAIN_VIEW = "/movietracker/view/MainView.fxml";
+    private static final double MINIMUM_WINDOW_WIDTH = 700;
+    private static final double MINIMUM_WINDOW_HEIGHT = 600;
     private static final String STORAGE_LOAD_WARNING = "Saved movie data could not be loaded. "
             + "The existing data file was preserved, and changes will only last for this session.";
 
@@ -52,6 +54,8 @@ public class MovieTrackerApplication extends Application {
 
         stage.setTitle(APPLICATION_TITLE);
         stage.setScene(scene);
+        stage.setMinWidth(MINIMUM_WINDOW_WIDTH);
+        stage.setMinHeight(MINIMUM_WINDOW_HEIGHT);
         stage.setResizable(true);
         stage.show();
     }

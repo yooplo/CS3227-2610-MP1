@@ -229,8 +229,7 @@
     -fx-effect: dropshadow(gaussian, rgba(22, 34, 55, 0.11), 12, 0.12, 0, 3);
 }
 
-.poster-placeholder,
-.details-poster-placeholder {
+.poster-placeholder {
     -fx-background-color: linear-gradient(to bottom right, #dbe7f8, #eef3fa);
     -fx-background-radius: 8px;
     -fx-border-color: #c5d3e6;

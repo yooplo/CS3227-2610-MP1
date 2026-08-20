@@ -114,14 +114,16 @@
                        styleClass="feedback-text" />
                 <VBox spacing="18.0" VBox.vgrow="ALWAYS" styleClass="details-panel">
                     <HBox spacing="18.0" alignment="TOP_LEFT" VBox.vgrow="ALWAYS">
-                        <StackPane minWidth="124.0"
+                        <StackPane fx:id="detailsPosterContainer"
+                                   minWidth="124.0"
                                    prefWidth="124.0"
                                    maxWidth="124.0"
-                                   minHeight="178.0"
-                                   prefHeight="178.0"
-                                   maxHeight="178.0"
-                                   styleClass="details-poster-placeholder">
-                            <Label text="POSTER" styleClass="poster-placeholder-text" />
+                                   minHeight="186.0"
+                                   prefHeight="186.0"
+                                   maxHeight="186.0">
+                            <StackPane styleClass="poster-placeholder">
+                                <Label text="POSTER" styleClass="poster-placeholder-text" />
+                            </StackPane>
                         </StackPane>
                         <VBox spacing="10.0" HBox.hgrow="ALWAYS">
                             <Label fx:id="detailsTitleLabel"

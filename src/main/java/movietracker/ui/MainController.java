@@ -6,15 +6,17 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
-import javafx.beans.binding.Bindings;
 import javafx.concurrent.Task;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
+import javafx.scene.AccessibleRole;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.geometry.Pos;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -41,7 +43,6 @@ public class MainController {
     private static final PseudoClass ERROR_STATE = PseudoClass.getPseudoClass("error");
     private static final PseudoClass SELECTED_STATE = PseudoClass.getPseudoClass("selected");
     private static final int RESULT_OVERVIEW_LIMIT = 180;
-    private static final double MOVIE_CARD_HORIZONTAL_INSETS = 34.0;
     private static final String SAVE_FAILURE_MESSAGE = "Your change is available for this session, "
             + "but it could not be saved. Check access to the data folder.";
     private static final String PERSISTENCE_DISABLED_MESSAGE = "Saved movie data could not be loaded. "
@@ -54,6 +55,7 @@ public class MainController {
     private MovieInfo currentMovieDetails;
     private Integer loadingDetailsTmdbId;
     private long detailsRequestVersion;
+    private View detailsOrigin = View.SEARCH;
 
     @FXML
     private TextField searchField;
@@ -99,6 +101,9 @@ public class MainController {
 
     @FXML
     private Button addToWatchlistButton;
+
+    @FXML
+    private Button markAsWatchedDetailsButton;
 
     @FXML
     private Label watchlistActionLabel;
@@ -205,10 +210,10 @@ public class MainController {
                 feedbackLabel,
                 "Found " + movies.size() + (movies.size() == 1 ? " movie." : " movies."),
                 false);
-        movies.forEach(movie -> resultsBox.getChildren().add(createResultButton(movie)));
+        movies.forEach(movie -> resultsBox.getChildren().add(createResultCard(movie)));
     }
 
-    private Button createResultButton(MovieInfo movie) {
+    private HBox createResultCard(MovieInfo movie) {
         Label title = new Label(movie.title());
         title.setWrapText(true);
         title.setMaxWidth(Double.MAX_VALUE);
@@ -243,42 +248,44 @@ public class MainController {
                 posterImageLoader.createPoster(movie.posterPath(), 76.0, 114.0),
                 information);
         result.setAlignment(Pos.TOP_LEFT);
-
-        Button resultButton = new Button();
-        resultButton.setGraphic(result);
-        resultButton.setMaxWidth(Double.MAX_VALUE);
-        resultButton.setAlignment(Pos.CENTER_LEFT);
-        result.prefWidthProperty().bind(Bindings.max(
-                0.0,
-                resultButton.widthProperty().subtract(MOVIE_CARD_HORIZONTAL_INSETS)));
-        resultButton.getStyleClass().addAll("movie-card-button", "movie-card");
-        resultButton.setAccessibleText("View details for " + movie.title());
-        resultButton.setOnAction(event -> loadMovieDetails(movie));
-        return resultButton;
+        result.setMaxWidth(Double.MAX_VALUE);
+        result.getStyleClass().addAll("movie-card-button", "movie-card");
+        configureSelectableCard(result, "View details for " + movie.title(), () -> loadMovieDetails(
+                movie.tmdbId(),
+                movie.title(),
+                movie.posterPath(),
+                View.SEARCH));
+        return result;
     }
 
-    private void loadMovieDetails(MovieInfo selectedMovie) {
+    private void loadMovieDetails(
+            int tmdbId,
+            String previewTitle,
+            String previewPosterPath,
+            View origin) {
+        detailsOrigin = origin;
+        updateBackButton();
         if (loadingDetailsTmdbId != null
-                && loadingDetailsTmdbId == selectedMovie.tmdbId()) {
+                && loadingDetailsTmdbId == tmdbId) {
             showView(View.DETAILS);
             return;
         }
 
         long requestVersion = ++detailsRequestVersion;
-        loadingDetailsTmdbId = selectedMovie.tmdbId();
+        loadingDetailsTmdbId = tmdbId;
         showView(View.DETAILS);
         setDetailsInProgress(true);
         clearDetails();
-        showDetailsPoster(selectedMovie.posterPath());
+        showDetailsPoster(previewPosterPath);
         currentMovieDetails = null;
         watchlistActionLabel.setText("");
-        detailsTitleLabel.setText(selectedMovie.title());
+        detailsTitleLabel.setText(previewTitle);
         setFeedback(detailsFeedbackLabel, "Loading movie details...", false);
 
         Task<MovieInfo> detailsTask = new Task<>() {
             @Override
             protected MovieInfo call() throws MovieServiceException {
-                return movieApiService.getMovieDetails(selectedMovie.tmdbId());
+                return movieApiService.getMovieDetails(tmdbId);
             }
         };
 
@@ -297,7 +304,8 @@ public class MainController {
             loadingDetailsTmdbId = null;
             setDetailsInProgress(false);
             clearDetails();
-            detailsTitleLabel.setText(selectedMovie.title());
+            detailsTitleLabel.setText(previewTitle);
+            showDetailsPoster(previewPosterPath);
             setFeedback(
                     detailsFeedbackLabel,
                     MovieSearchMessages.forDetailsFailure(detailsTask.getException()),
@@ -318,7 +326,7 @@ public class MainController {
         setDetailMetadataVisible(true);
         detailsOverviewLabel.setText(MovieDetailsText.overview(movie));
         showDetailsPoster(movie.posterPath());
-        updateAddToWatchlistState(movie.tmdbId());
+        updateDetailsCollectionState(movie.tmdbId());
     }
 
     private void clearDetails() {
@@ -328,12 +336,22 @@ public class MainController {
         setDetailMetadataVisible(false);
         detailsOverviewLabel.setText("");
         addToWatchlistButton.setDisable(true);
+        addToWatchlistButton.setVisible(false);
+        addToWatchlistButton.setManaged(false);
+        markAsWatchedDetailsButton.setDisable(true);
+        markAsWatchedDetailsButton.setVisible(false);
+        markAsWatchedDetailsButton.setManaged(false);
         showDetailsPoster(null);
     }
 
     @FXML
     private void handleBackToResults() {
-        showView(View.SEARCH);
+        if (detailsOrigin == View.WATCHLIST) {
+            refreshWatchlist();
+        } else if (detailsOrigin == View.WATCHED) {
+            refreshWatched();
+        }
+        showView(detailsOrigin);
     }
 
     @FXML
@@ -362,27 +380,56 @@ public class MainController {
         Movie movie = MovieFactory.fromMovieInfo(currentMovieDetails);
         MutationResult result = movieCollectionManager.add(movie);
         if (result != MutationResult.NO_CHANGE) {
+            updateDetailsCollectionState(movie.getTmdbId());
             watchlistActionLabel.setText("Added to your watchlist.");
-            addToWatchlistButton.setDisable(true);
             showPersistenceResult(result);
         } else {
-            updateAddToWatchlistState(movie.getTmdbId());
+            updateDetailsCollectionState(movie.getTmdbId());
             addToWatchlistButton.setDisable(true);
         }
     }
 
-    private void updateAddToWatchlistState(int tmdbId) {
-        Optional<Movie> savedMovie = movieCollectionManager.findByTmdbId(tmdbId);
-        if (savedMovie.isEmpty()) {
-            addToWatchlistButton.setDisable(false);
-            watchlistActionLabel.setText("");
+    @FXML
+    private void handleMarkAsWatchedFromDetails() {
+        if (currentMovieDetails == null) {
             return;
         }
 
-        addToWatchlistButton.setDisable(true);
-        watchlistActionLabel.setText(savedMovie.orElseThrow().getWatchStatus() == WatchStatus.WATCHED
-                ? "This movie is already in your collection and already watched."
-                : "This movie is already in your watchlist.");
+        MovieDetailsCollectionState state = MovieDetailsCollectionState.from(
+                movieCollectionManager.findByTmdbId(currentMovieDetails.tmdbId()));
+        MutationResult result = state == MovieDetailsCollectionState.UNSAVED
+                ? movieCollectionManager.add(MovieFactory.fromMovieInfo(
+                        currentMovieDetails,
+                        WatchStatus.WATCHED))
+                : movieCollectionManager.markAsWatched(currentMovieDetails.tmdbId());
+        refreshWatchlist();
+        refreshWatched();
+        updateDetailsCollectionState(currentMovieDetails.tmdbId());
+        if (result != MutationResult.NO_CHANGE) {
+            watchlistActionLabel.setText("Marked as watched.");
+        }
+        showPersistenceResult(result);
+    }
+
+    private void updateDetailsCollectionState(int tmdbId) {
+        Optional<Movie> savedMovie = movieCollectionManager.findByTmdbId(tmdbId);
+        MovieDetailsCollectionState state = MovieDetailsCollectionState.from(savedMovie);
+
+        boolean canAddToWatchlist = state == MovieDetailsCollectionState.UNSAVED;
+        addToWatchlistButton.setVisible(canAddToWatchlist);
+        addToWatchlistButton.setManaged(canAddToWatchlist);
+        addToWatchlistButton.setDisable(!canAddToWatchlist);
+
+        boolean canMarkAsWatched = state != MovieDetailsCollectionState.WATCHED;
+        markAsWatchedDetailsButton.setVisible(canMarkAsWatched);
+        markAsWatchedDetailsButton.setManaged(canMarkAsWatched);
+        markAsWatchedDetailsButton.setDisable(!canMarkAsWatched);
+
+        watchlistActionLabel.setText(switch (state) {
+            case UNSAVED -> "";
+            case WATCHLIST -> "This movie is already in your watchlist.";
+            case WATCHED -> "This movie is already in your collection and already watched.";
+        });
     }
 
     private void refreshWatchlist() {
@@ -402,7 +449,7 @@ public class MainController {
     }
 
     private VBox createWatchlistEntry(Movie movie) {
-        HBox information = createSavedMovieInformation(movie, "Watchlist", false);
+        HBox informationButton = createSavedMovieSelection(movie, "Watchlist", false, View.WATCHLIST);
 
         Button watchedButton = new Button("Mark as Watched");
         watchedButton.getStyleClass().add("primary-button");
@@ -422,7 +469,7 @@ public class MainController {
         });
 
         FlowPane actions = new FlowPane(8.0, 8.0, watchedButton, removeButton);
-        VBox entry = new VBox(14.0, information, actions);
+        VBox entry = new VBox(14.0, informationButton, actions);
         entry.getStyleClass().addAll("movie-card", "saved-movie-card");
         return entry;
     }
@@ -444,10 +491,38 @@ public class MainController {
     }
 
     private VBox createWatchedEntry(Movie movie) {
-        HBox information = createSavedMovieInformation(movie, "Watched", true);
-        VBox entry = new VBox(information);
+        HBox informationButton = createSavedMovieSelection(movie, "Watched", true, View.WATCHED);
+        VBox entry = new VBox(informationButton);
         entry.getStyleClass().addAll("movie-card", "saved-movie-card");
         return entry;
+    }
+
+    private HBox createSavedMovieSelection(Movie movie, String status, boolean watched, View origin) {
+        HBox information = createSavedMovieInformation(movie, status, watched);
+        information.getStyleClass().add("saved-movie-select-button");
+        configureSelectableCard(information, "View details for " + movie.getTitle(), () -> loadMovieDetails(
+                movie.getTmdbId(),
+                movie.getTitle(),
+                movie.getPosterPath(),
+                origin));
+        return information;
+    }
+
+    private void configureSelectableCard(HBox card, String accessibleText, Runnable action) {
+        card.setAccessibleRole(AccessibleRole.BUTTON);
+        card.setAccessibleText(accessibleText);
+        card.setFocusTraversable(true);
+        card.setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.PRIMARY) {
+                action.run();
+            }
+        });
+        card.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER || event.getCode() == KeyCode.SPACE) {
+                event.consume();
+                action.run();
+            }
+        });
     }
 
     private HBox createSavedMovieInformation(Movie movie, String status, boolean watched) {
@@ -491,6 +566,7 @@ public class MainController {
         detailsLoadingIndicator.setManaged(inProgress);
         if (inProgress) {
             addToWatchlistButton.setDisable(true);
+            markAsWatchedDetailsButton.setDisable(true);
         }
     }
 
@@ -525,10 +601,16 @@ public class MainController {
         setViewState(watchedView, view == View.WATCHED);
         updateNavigationState(
                 searchNavButton,
-                view == View.SEARCH || view == View.DETAILS,
+                view == View.SEARCH || (view == View.DETAILS && detailsOrigin == View.SEARCH),
                 "Search");
-        updateNavigationState(watchlistNavButton, view == View.WATCHLIST, "Watchlist");
-        updateNavigationState(watchedNavButton, view == View.WATCHED, "Watched");
+        updateNavigationState(
+                watchlistNavButton,
+                view == View.WATCHLIST || (view == View.DETAILS && detailsOrigin == View.WATCHLIST),
+                "Watchlist");
+        updateNavigationState(
+                watchedNavButton,
+                view == View.WATCHED || (view == View.DETAILS && detailsOrigin == View.WATCHED),
+                "Watched");
     }
 
     private void setViewState(VBox view, boolean shown) {
@@ -574,5 +656,14 @@ public class MainController {
     private void showDetailsPoster(String posterPath) {
         detailsPosterContainer.getChildren().setAll(
                 posterImageLoader.createPoster(posterPath, 124.0, 186.0));
+    }
+
+    private void updateBackButton() {
+        backButton.setText(switch (detailsOrigin) {
+            case SEARCH -> "\u2190 Back to search results";
+            case WATCHLIST -> "\u2190 Back to Watchlist";
+            case WATCHED -> "\u2190 Back to Watched";
+            case DETAILS -> throw new IllegalStateException("Details cannot open itself");
+        });
     }
 }

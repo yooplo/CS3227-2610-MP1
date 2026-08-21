@@ -157,8 +157,16 @@
                     <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="details-actions">
                         <Button fx:id="addToWatchlistButton"
                                 text="Add to Watchlist"
+                                visible="false"
+                                managed="false"
                                 styleClass="primary-button"
                                 onAction="#handleAddToWatchlist" />
+                        <Button fx:id="markAsWatchedDetailsButton"
+                                text="Mark as Watched"
+                                visible="false"
+                                managed="false"
+                                styleClass="primary-button"
+                                onAction="#handleMarkAsWatchedFromDetails" />
                         <Label fx:id="watchlistActionLabel"
                                wrapText="true"
                                styleClass="action-feedback" />

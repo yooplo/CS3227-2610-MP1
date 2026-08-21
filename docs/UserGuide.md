@@ -50,12 +50,13 @@ The current search workflow is:
 The current watchlist workflow is:
 
 1. Open a movie's details.
-2. Select **Add to Watchlist**.
-3. Confirm that the application reports a successful addition and disables the action.
+2. Select **Add to Watchlist**, or select **Mark as Watched** to save the movie directly in Watched.
+3. Confirm that the application reports the successful status change and removes actions that are no longer applicable.
 4. Select **Watchlist** in the top navigation.
 5. Confirm that the movie is listed with its poster thumbnail, available release date, and TMDB rating.
-6. Select **Remove** beside that movie to remove only that entry.
-7. Return to **Search**; the previous query and results remain available without another search.
+6. Select the movie card outside its action buttons to open the movie's details. Select **Back to Watchlist** to return to the same collection view.
+7. From the details page, select **Mark as Watched** to move a Watchlist movie directly to Watched, or return and select **Remove** to remove only that entry.
+8. Return to **Search**; the previous query and results remain available without another search.
 
 The current watched-movies workflow is:
 
@@ -63,7 +64,8 @@ The current watched-movies workflow is:
 2. Select **Mark as Watched** beside a movie.
 3. Confirm that it disappears from Watchlist immediately.
 4. Open **Watched** and confirm that the movie appears with its poster thumbnail, available release date, and TMDB rating.
-5. Search for and open that movie again; confirm that the details view says it is already watched and does not allow it to be added to Watchlist again.
+5. Select the watched movie card to open its details. Confirm that the page says it is already watched, has no active Add to Watchlist or Mark as Watched action, and that **Back to Watched** returns to the Watched view.
+6. Search for and open that movie again; confirm that the details view still reports its watched state and does not allow it to be added to Watchlist again.
 
 To verify persistence, close and restart Movie Tracker after adding a movie or marking it as watched. The movie should return in the same view and with the same status. Removing a Watchlist movie is also saved immediately.
 
@@ -73,7 +75,7 @@ Also verify that:
 - A query with no matches displays a clear message.
 - A missing or invalid token displays configuration guidance.
 - Network and service failures display understandable messages without stack traces.
-- A details request failure displays an understandable message and still allows returning to the search results.
+- A details request failure displays an understandable message and still allows returning to the originating Search, Watchlist, or Watched view.
 - Opening a movie that is already saved reports that it is already in the collection and does not create a duplicate.
 - Removing a movie allows it to be added again after opening its details later.
 - A watched movie does not appear in Watchlist and cannot be moved back in this version.

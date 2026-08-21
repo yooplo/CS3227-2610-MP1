@@ -28,11 +28,11 @@ The stage has a 700×600 minimum size, preventing the poster-and-text layouts fr
 
 ## Movie details GUI
 
-Each search result is a selectable button carrying its application-level `MovieInfo`. Selecting it hides the search view without clearing it and starts a background JavaFX `Task` that calls `MovieApiService.getMovieDetails`. Success and failure handlers update the details view on the JavaFX Application Thread.
+Search results and saved-movie cards call one shared details-loading method with the movie's TMDB ID and their originating view. The method hides the origin without clearing it and starts a background JavaFX `Task` that calls `MovieApiService.getMovieDetails`. Success and failure handlers update the details view on the JavaFX Application Thread; controllers contain no TMDB HTTP or JSON logic.
 
 The controller tracks the active detail request. Re-selecting the same movie while it is loading does not issue a duplicate request, and a late result from an older request cannot overwrite a newer movie selection. View visibility is updated through one shared helper so Search, Details, Watchlist, and Watched cannot accidentally remain managed at the same time.
 
-The details view displays safe fallback text for missing dates, ratings, and overviews. `MovieDetailsText` keeps that non-GUI formatting logic independently testable. Returning to the search view only toggles view visibility, preserving the previous query and result controls without another API search.
+The controller stores the originating `View` when details are opened. The Back action and selected navigation state therefore return to Search, Watchlist, or Watched as appropriate. Returning to Search only toggles view visibility, preserving the previous query and result controls without another API search. The details view displays safe fallback text for missing dates, ratings, and overviews; `MovieDetailsText` keeps that formatting logic independently testable.
 
 ## Poster images
 
@@ -50,13 +50,13 @@ URL-construction tests cover normal, missing, unsafe, and malformed poster paths
 
 `MovieFactory` performs the single application-level conversion from `MovieInfo` into a saved `Movie`, copying all current metadata and assigning `WatchStatus.WATCHLIST`. `MovieCollection.add` uses the TMDB ID to reject duplicates without replacing the existing movie or status.
 
-The Watchlist view is refreshed from `MovieCollection.getWatchlistMovies` whenever it is opened and after removal. Each Remove action captures the entry's TMDB ID and calls `MovieCollection.remove`, then refreshes the view immediately. Search controls and result nodes remain in memory while the Watchlist view is displayed.
+The Watchlist view is refreshed from `MovieCollection.getWatchlistMovies` whenever it is opened and after a collection mutation. Its movie-information area is a full-width, keyboard-focusable region with an accessible button role that opens details, while Mark as Watched and Remove are separate sibling controls. Using a content-sized region avoids JavaFX `ButtonSkin` stretching card graphics vertically. An action-button click therefore performs only its mutation and cannot bubble into details navigation. Each mutation captures the entry's TMDB ID, delegates to `MovieCollectionManager`, and refreshes the relevant filtered views. Search controls and result nodes remain in memory while the Watchlist view is displayed.
 
 ## Watched movies
 
-The Watchlist action delegates the one-way status transition to `MovieCollection.markAsWatched`. It then refreshes the Watchlist from `getWatchlistMovies` and the Watched view from `getWatchedMovies`, so the same domain object moves between the filtered views without being duplicated or replaced.
+Both Watchlist-card and details-page Mark as Watched actions delegate the one-way status transition to `MovieCollectionManager.markAsWatched`, which applies domain behavior through `MovieCollection` and invokes the existing persistence flow. The controller then refreshes Watchlist from `getWatchlistMovies` and Watched from `getWatchedMovies`, so the same domain object moves between the filtered views without being duplicated or replaced. A save failure preserves the in-memory transition and produces the established safe storage warning.
 
-When details are opened, the controller looks up the TMDB ID in the shared collection. A `WATCHED` movie disables Add to Watchlist and displays an already-watched message. No watched-to-watchlist transition is exposed.
+When details are opened, `MovieDetailsCollectionState` classifies the shared collection lookup as unsaved, `WATCHLIST`, or `WATCHED`. Unsaved movies show both Add to Watchlist and Mark as Watched. The latter uses `MovieFactory` to create the saved movie directly with `WATCHED` status and persists it through one `MovieCollectionManager.add` mutation. Watchlist movies show an already-saved message and use the existing `markAsWatched` mutation; watched movies show an already-watched message and neither active status action. State and status-aware conversion helpers are covered by non-network unit tests. No watched-to-watchlist transition is exposed.
 
 ## Local storage
 

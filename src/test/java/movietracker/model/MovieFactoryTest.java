@@ -42,6 +42,27 @@ class MovieFactoryTest {
     }
 
     @Test
+    void canAssignWatchedStatusWithoutChangingMetadata() {
+        MovieInfo movieInfo = new MovieInfo(
+                157336,
+                "Interstellar",
+                LocalDate.of(2014, 11, 5),
+                "Explorers travel through a wormhole.",
+                "/poster.jpg",
+                8.5);
+
+        Movie movie = MovieFactory.fromMovieInfo(movieInfo, WatchStatus.WATCHED);
+
+        assertEquals(movieInfo.tmdbId(), movie.getTmdbId());
+        assertEquals(movieInfo.title(), movie.getTitle());
+        assertEquals(movieInfo.releaseDate(), movie.getReleaseDate());
+        assertEquals(movieInfo.overview(), movie.getOverview());
+        assertEquals(movieInfo.posterPath(), movie.getPosterPath());
+        assertEquals(movieInfo.externalRating(), movie.getExternalRating());
+        assertEquals(WatchStatus.WATCHED, movie.getWatchStatus());
+    }
+
+    @Test
     void rejectsNullMovieInfo() {
         assertThrows(NullPointerException.class, () -> MovieFactory.fromMovieInfo(null));
     }

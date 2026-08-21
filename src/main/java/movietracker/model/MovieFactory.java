@@ -7,6 +7,10 @@ public final class MovieFactory {
     }
 
     public static Movie fromMovieInfo(MovieInfo movieInfo) {
+        return fromMovieInfo(movieInfo, WatchStatus.WATCHLIST);
+    }
+
+    public static Movie fromMovieInfo(MovieInfo movieInfo, WatchStatus watchStatus) {
         Objects.requireNonNull(movieInfo, "movieInfo must not be null");
         return new Movie(
                 movieInfo.tmdbId(),
@@ -15,6 +19,6 @@ public final class MovieFactory {
                 movieInfo.overview(),
                 movieInfo.posterPath(),
                 movieInfo.externalRating(),
-                WatchStatus.WATCHLIST);
+                watchStatus);
     }
 }

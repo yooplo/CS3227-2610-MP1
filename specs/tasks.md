@@ -1,0 +1,174 @@
+# Movie Tracker — Implementation Task Plan
+
+This task plan follows the CS2103/T-style incremental approach: implement in small steps, examine each change, test it, then commit it.
+
+Use requirement IDs from `requirements.md` in commit/PR notes where useful.
+
+## Phase 0 — Repository and build skeleton
+
+- [ ] Ensure the grading branch is named `master`.
+- [ ] Set Java toolchain/default target to Java SE 25.
+- [ ] Keep `src/main/java` as the Java source root.
+- [ ] Set up Gradle Wrapper.
+- [ ] Add JavaFX dependencies/plugin.
+- [ ] Add JUnit 5.
+- [ ] Add chosen JSON library.
+- [ ] Add `.gitignore` entries for IDE/build/temp/secret files.
+- [ ] Add `release/` directory policy.
+- [ ] Verify a minimal JavaFX window starts from Gradle.
+- [ ] Add separate `Launcher` class.
+
+**Done when:** `gradlew run` launches an empty/minimal JavaFX Movie Tracker window on the development machine.
+
+## Phase 1 — Local domain model
+
+- [ ] Add `Movie`.
+- [ ] Add `MovieDetails`.
+- [ ] Add `TrackedMovie`.
+- [ ] Add `WatchStatus` enum.
+- [ ] Write unit tests for status/data invariants.
+
+**Done when:** domain classes compile and core invariants are tested without JavaFX or network code.
+
+## Phase 2 — Local storage
+
+- [ ] Implement `Storage` interface.
+- [ ] Implement JSON `LocalStorage`.
+- [ ] Create missing `data/` directory/file automatically.
+- [ ] Load empty state on first run.
+- [ ] Save after every tracking mutation.
+- [ ] Add storage round-trip tests.
+- [ ] Add corrupted-file behavior and tests.
+
+**Covers:** FR-WATCHLIST-05, FR-WATCHED-06, FR-STARTUP-01..03.
+
+## Phase 3 — TMDB client happy path
+
+- [ ] Read `TMDB_API_TOKEN` from runtime configuration.
+- [ ] Implement authenticated GET helper.
+- [ ] Implement `/search/movie`.
+- [ ] Map search JSON into `Movie` objects.
+- [ ] Implement `/movie/{movie_id}`.
+- [ ] Map detail JSON into `MovieDetails`.
+- [ ] Add fixture-based mapping tests.
+
+**Done when:** a non-GUI integration/manual runner can search and retrieve one movie detail without leaking the token.
+
+## Phase 4 — TMDB error handling
+
+- [ ] Handle missing token.
+- [ ] Handle non-2xx responses.
+- [ ] Handle network failures/timeouts.
+- [ ] Handle malformed payloads.
+- [ ] Represent failures using `TmdbException`.
+- [ ] Ensure errors can be converted to user-friendly UI messages.
+
+**Covers:** FR-SEARCH-07, NFR-SECURITY.
+
+## Phase 5 — Core service logic
+
+- [ ] Implement `MovieTrackerService`.
+- [ ] Implement add-to-watchlist.
+- [ ] Prevent duplicates by TMDB ID.
+- [ ] Implement mark-watched transition.
+- [ ] Enforce Watchlist/Watched mutual exclusivity.
+- [ ] Implement remove.
+- [ ] Persist mutations.
+- [ ] Add comprehensive service tests.
+
+**Covers:** FR-WATCHLIST, FR-WATCHED.
+
+## Phase 6 — Main JavaFX shell
+
+- [ ] Build the main window.
+- [ ] Add Search, Watchlist, Watched navigation.
+- [ ] Add CSS for compact desktop layout.
+- [ ] Make main content responsive to resizing.
+- [ ] Keep controllers thin and delegate behavior to service layer.
+
+**Covers:** FR-NAV, NFR-USABILITY.
+
+## Phase 7 — Search UI
+
+- [ ] Add search field/button.
+- [ ] Validate empty input locally.
+- [ ] Execute TMDB request off the JavaFX Application Thread.
+- [ ] Show loading state.
+- [ ] Render result rows/cards.
+- [ ] Render poster or placeholder.
+- [ ] Add empty-results state.
+- [ ] Add network/API error state.
+
+**Covers:** FR-SEARCH.
+
+## Phase 8 — Movie detail UI
+
+- [ ] Clicking a search result opens detail view.
+- [ ] Fetch/render movie details asynchronously.
+- [ ] Add Back action.
+- [ ] Add contextual Watchlist/Watched actions.
+
+**Covers:** FR-DETAIL-01, FR-DETAIL-04..05.
+
+## Phase 9 — Watchlist UI
+
+- [ ] Render persisted Watchlist.
+- [ ] Clicking a Watchlist item opens detail view.
+- [ ] Add remove action.
+- [ ] Refresh view immediately after mutation.
+
+**Covers:** FR-WATCHLIST, FR-DETAIL-02.
+
+## Phase 10 — Watched UI
+
+- [ ] Render persisted Watched movies.
+- [ ] Clicking a Watched item opens detail view.
+- [ ] Marking watched from Watchlist moves it between sections immediately.
+- [ ] Add remove action.
+
+**Covers:** FR-WATCHED, FR-DETAIL-03.
+
+## Phase 11 — Personal rating (optional MVP+)
+
+- [ ] Add integer 1–10 rating UI.
+- [ ] Validate range.
+- [ ] Persist/update/clear rating.
+- [ ] Add tests.
+
+**Covers:** FR-RATING.
+
+## Phase 12 — Quality pass
+
+- [ ] Review code against SE-EDU Java coding standard.
+- [ ] Add Checkstyle if practical/required.
+- [ ] Add Java assertions only for genuine internal assumptions.
+- [ ] Improve exception messages and edge cases.
+- [ ] Ensure no blocking network work runs on JavaFX thread.
+- [ ] Ensure no token appears in Git history/current tracked files.
+- [ ] Run all unit tests.
+- [ ] Manually test primary flow.
+
+## Phase 13 — Cross-platform release
+
+- [ ] Confirm Java/JavaFX packaging strategy supports Windows.
+- [ ] Smoke-test on Windows.
+- [ ] Smoke-test on Linux.
+- [ ] Smoke-test on macOS.
+- [ ] Build the latest distributable JAR with required libraries.
+- [ ] Place the submission JAR in `release/`.
+- [ ] Verify the JAR starts from a clean folder/environment as required by the assignment.
+- [ ] Confirm branch is `master` before grading/submission.
+
+> JavaFX contains platform-specific native components. Do not assume a JAR produced and tested on only one OS is automatically cross-platform. Explicitly verify the final packaging approach and test on all three required operating systems.
+
+## Phase 14 — Documentation and final checks
+
+- [ ] Update root `README.md` with setup/run instructions.
+- [ ] Update `docs/README.md` as the user guide if required by the MP1 workflow.
+- [ ] Include TMDB attribution required by current TMDB terms.
+- [ ] Add screenshots if useful.
+- [ ] Keep a short implementation summary/changelog for MP1.
+- [ ] Run `gradlew clean test`.
+- [ ] Build release artifact from a clean checkout if possible.
+- [ ] Check `git status` is clean.
+- [ ] Push `master`.

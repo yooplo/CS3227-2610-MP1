@@ -1,0 +1,29 @@
+# Gradle
+.gradle/
+build/
+
+# Java
+*.class
+out/
+
+# IntelliJ
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+*.local.properties
+
+# Temporary AI/development files
+_temp/
+
+# Runtime application data
+data/*.json
+!data/.gitkeep

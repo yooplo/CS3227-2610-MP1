@@ -22,11 +22,11 @@ Use requirement IDs from `requirements.md` in commit/PR notes where useful.
 
 ## Phase 1 — Local domain model
 
-- [ ] Add `Movie`.
-- [ ] Add `MovieDetails`.
-- [ ] Add `TrackedMovie`.
-- [ ] Add `WatchStatus` enum.
-- [ ] Write unit tests for status/data invariants.
+- [x] Add `Movie`.
+- [x] Add `MovieDetails`.
+- [x] Add `TrackedMovie`.
+- [x] Add `WatchStatus` enum.
+- [x] Write unit tests for status/data invariants.
 
 **Done when:** domain classes compile and core invariants are tested without JavaFX or network code.
 

@@ -12,7 +12,7 @@ Use requirement IDs from `requirements.md` in commit/PR notes where useful.
 - [x] Set up Gradle Wrapper.
 - [x] Add JavaFX dependencies/plugin.
 - [x] Add JUnit 5.
-- [ ] Add chosen JSON library.
+- [x] Add chosen JSON library.
 - [x] Add `.gitignore` entries for IDE/build/temp/secret files.
 - [x] Add `release/` directory policy.
 - [x] Verify a minimal JavaFX window starts from Gradle.
@@ -32,36 +32,36 @@ Use requirement IDs from `requirements.md` in commit/PR notes where useful.
 
 ## Phase 2 — Local storage
 
-- [ ] Implement `Storage` interface.
-- [ ] Implement JSON `LocalStorage`.
-- [ ] Create missing `data/` directory/file automatically.
-- [ ] Load empty state on first run.
+- [x] Implement `Storage` interface.
+- [x] Implement JSON `LocalStorage`.
+- [x] Create missing `data/` directory/file automatically.
+- [x] Load empty state on first run.
 - [ ] Save after every tracking mutation.
-- [ ] Add storage round-trip tests.
-- [ ] Add corrupted-file behavior and tests.
+- [x] Add storage round-trip tests.
+- [x] Add corrupted-file behavior and tests.
 
 **Covers:** FR-WATCHLIST-05, FR-WATCHED-06, FR-STARTUP-01..03.
 
 ## Phase 3 — TMDB client happy path
 
-- [ ] Read `TMDB_API_TOKEN` from runtime configuration.
-- [ ] Implement authenticated GET helper.
-- [ ] Implement `/search/movie`.
-- [ ] Map search JSON into `Movie` objects.
-- [ ] Implement `/movie/{movie_id}`.
-- [ ] Map detail JSON into `MovieDetails`.
-- [ ] Add fixture-based mapping tests.
+- [x] Read `TMDB_API_TOKEN` from runtime configuration.
+- [x] Implement authenticated GET helper.
+- [x] Implement `/search/movie`.
+- [x] Map search JSON into `Movie` objects.
+- [x] Implement `/movie/{movie_id}`.
+- [x] Map detail JSON into `MovieDetails`.
+- [x] Add fixture-based mapping tests.
 
 **Done when:** a non-GUI integration/manual runner can search and retrieve one movie detail without leaking the token.
 
 ## Phase 4 — TMDB error handling
 
-- [ ] Handle missing token.
-- [ ] Handle non-2xx responses.
-- [ ] Handle network failures/timeouts.
-- [ ] Handle malformed payloads.
-- [ ] Represent failures using `TmdbException`.
-- [ ] Ensure errors can be converted to user-friendly UI messages.
+- [x] Handle missing token.
+- [x] Handle non-2xx responses.
+- [x] Handle network failures/timeouts.
+- [x] Handle malformed payloads.
+- [x] Represent failures using `TmdbException`.
+- [x] Ensure errors can be converted to user-friendly UI messages.
 
 **Covers:** FR-SEARCH-07, NFR-SECURITY.
 

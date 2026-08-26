@@ -36,7 +36,7 @@ Use requirement IDs from `requirements.md` in commit/PR notes where useful.
 - [x] Implement JSON `LocalStorage`.
 - [x] Create missing `data/` directory/file automatically.
 - [x] Load empty state on first run.
-- [ ] Save after every tracking mutation.
+- [x] Save after every tracking mutation.
 - [x] Add storage round-trip tests.
 - [x] Add corrupted-file behavior and tests.
 
@@ -67,14 +67,14 @@ Use requirement IDs from `requirements.md` in commit/PR notes where useful.
 
 ## Phase 5 — Core service logic
 
-- [ ] Implement `MovieTrackerService`.
-- [ ] Implement add-to-watchlist.
-- [ ] Prevent duplicates by TMDB ID.
-- [ ] Implement mark-watched transition.
-- [ ] Enforce Watchlist/Watched mutual exclusivity.
-- [ ] Implement remove.
-- [ ] Persist mutations.
-- [ ] Add comprehensive service tests.
+- [x] Implement `MovieTrackerService`.
+- [x] Implement add-to-watchlist.
+- [x] Prevent duplicates by TMDB ID.
+- [x] Implement mark-watched transition.
+- [x] Enforce Watchlist/Watched mutual exclusivity.
+- [x] Implement remove.
+- [x] Persist mutations.
+- [x] Add comprehensive service tests.
 
 **Covers:** FR-WATCHLIST, FR-WATCHED.
 

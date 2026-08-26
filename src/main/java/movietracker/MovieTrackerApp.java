@@ -24,7 +24,7 @@ public final class MovieTrackerApp extends Application {
     private static final double MINIMUM_WIDTH = 720;
     private static final double MINIMUM_HEIGHT = 480;
 
-    private ExecutorService searchExecutor;
+    private ExecutorService tmdbExecutor;
     private MainWindow mainWindow;
 
     /**
@@ -37,12 +37,12 @@ public final class MovieTrackerApp extends Application {
         MovieTrackerService trackingService = new MovieTrackerService(new LocalStorage());
         MovieTrackerApplicationService applicationService = new MovieTrackerApplicationService(
                 TmdbClient.fromEnvironment(), trackingService);
-        searchExecutor = Executors.newSingleThreadExecutor(runnable -> Thread.ofPlatform()
+        tmdbExecutor = Executors.newSingleThreadExecutor(runnable -> Thread.ofPlatform()
                 .daemon(true)
-                .name("tmdb-search")
+                .name("tmdb-worker")
                 .unstarted(runnable));
 
-        mainWindow = new MainWindow(applicationService, searchExecutor);
+        mainWindow = new MainWindow(applicationService, tmdbExecutor);
         Scene scene = new Scene(mainWindow, INITIAL_WIDTH, INITIAL_HEIGHT);
         scene.getStylesheets().add(getClass()
                 .getResource("/movietracker/css/app.css")
@@ -61,8 +61,8 @@ public final class MovieTrackerApp extends Application {
         if (mainWindow != null) {
             mainWindow.close();
         }
-        if (searchExecutor != null) {
-            searchExecutor.shutdownNow();
+        if (tmdbExecutor != null) {
+            tmdbExecutor.shutdownNow();
         }
     }
 

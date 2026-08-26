@@ -113,9 +113,9 @@ without coordinating the TMDB client and local tracking service directly.
 
 ## Phase 8 — Movie detail UI
 
-- [ ] Clicking a search result opens detail view.
-- [ ] Fetch/render movie details asynchronously.
-- [ ] Add Back action.
+- [x] Clicking a search result opens detail view.
+- [x] Fetch/render movie details asynchronously.
+- [x] Add Back action.
 - [ ] Add contextual Watchlist/Watched actions.
 
 **Covers:** FR-DETAIL-01, FR-DETAIL-04..05.

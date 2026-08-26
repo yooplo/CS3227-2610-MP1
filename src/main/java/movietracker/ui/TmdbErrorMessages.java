@@ -5,11 +5,11 @@ import java.util.Objects;
 import movietracker.api.TmdbErrorCategory;
 
 /**
- * Converts stable TMDB error categories into safe Search-view messages.
+ * Converts stable TMDB error categories into safe user-facing messages.
  */
-final class SearchErrorMessages {
+final class TmdbErrorMessages {
 
-    private SearchErrorMessages() {
+    private TmdbErrorMessages() {
     }
 
     static String forCategory(TmdbErrorCategory category) {

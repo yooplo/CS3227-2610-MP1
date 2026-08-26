@@ -2,6 +2,7 @@ package movietracker.ui;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 
 import javafx.geometry.Insets;
@@ -13,6 +14,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import movietracker.model.Movie;
 import movietracker.service.MovieTrackerApplicationService;
 
 /**
@@ -26,14 +28,19 @@ public final class MainWindow extends BorderPane {
     private final Map<Section, Button> navigationButtons = new EnumMap<>(Section.class);
     private final Map<Section, Node> sectionViews = new EnumMap<>(Section.class);
     private final SearchView searchView;
+    private final MovieTrackerApplicationService applicationService;
+    private final Executor tmdbExecutor;
+    private MovieDetailsView detailsView;
 
     /**
      * Creates the application shell with placeholder section views.
      */
-    public MainWindow(MovieTrackerApplicationService applicationService, Executor searchExecutor) {
+    public MainWindow(MovieTrackerApplicationService applicationService, Executor tmdbExecutor) {
+        this.applicationService = Objects.requireNonNull(applicationService, "applicationService");
+        this.tmdbExecutor = Objects.requireNonNull(tmdbExecutor, "tmdbExecutor");
         getStyleClass().add("main-window");
 
-        searchView = new SearchView(applicationService, searchExecutor);
+        searchView = new SearchView(applicationService, tmdbExecutor, this::showMovieDetails);
         sectionViews.put(Section.SEARCH, searchView);
         sectionViews.put(Section.WATCHLIST, createCollectionView(
                 "Watchlist", "Movies saved to your Watchlist will appear here."));
@@ -50,6 +57,7 @@ public final class MainWindow extends BorderPane {
      */
     public void close() {
         searchView.cancelActiveSearch();
+        closeDetailsView();
     }
 
     private VBox createNavigation() {
@@ -107,6 +115,7 @@ public final class MainWindow extends BorderPane {
     }
 
     private void showSection(Section section) {
+        closeDetailsView();
         contentArea.getChildren().setAll(sectionViews.get(section));
         navigationButtons.forEach((candidate, button) -> {
             button.getStyleClass().remove(ACTIVE_NAVIGATION_STYLE);
@@ -114,6 +123,25 @@ public final class MainWindow extends BorderPane {
                 button.getStyleClass().add(ACTIVE_NAVIGATION_STYLE);
             }
         });
+    }
+
+    private void showMovieDetails(Movie movie) {
+        closeDetailsView();
+        detailsView = new MovieDetailsView(
+                movie, applicationService, tmdbExecutor, this::returnToSearch);
+        contentArea.getChildren().setAll(detailsView);
+    }
+
+    private void returnToSearch() {
+        closeDetailsView();
+        showSection(Section.SEARCH);
+    }
+
+    private void closeDetailsView() {
+        if (detailsView != null) {
+            detailsView.cancelActiveLoad();
+            detailsView = null;
+        }
     }
 
     private enum Section {

@@ -6,21 +6,21 @@ import org.junit.jupiter.api.Test;
 
 import movietracker.api.TmdbErrorCategory;
 
-class SearchErrorMessagesTest {
+class TmdbErrorMessagesTest {
 
     @Test
     void categoriesMapToStableUserFriendlyMessages() {
         assertEquals("TMDB API token is not configured.",
-                SearchErrorMessages.forCategory(TmdbErrorCategory.MISSING_TOKEN));
+                TmdbErrorMessages.forCategory(TmdbErrorCategory.MISSING_TOKEN));
         assertEquals("Unable to connect to TMDB. Check your connection and try again.",
-                SearchErrorMessages.forCategory(TmdbErrorCategory.NETWORK));
+                TmdbErrorMessages.forCategory(TmdbErrorCategory.NETWORK));
         assertEquals("TMDB took too long to respond. Try again.",
-                SearchErrorMessages.forCategory(TmdbErrorCategory.TIMEOUT));
+                TmdbErrorMessages.forCategory(TmdbErrorCategory.TIMEOUT));
         assertEquals("TMDB returned an error. Try again later.",
-                SearchErrorMessages.forCategory(TmdbErrorCategory.HTTP_ERROR));
+                TmdbErrorMessages.forCategory(TmdbErrorCategory.HTTP_ERROR));
         assertEquals("TMDB returned invalid data. Try again later.",
-                SearchErrorMessages.forCategory(TmdbErrorCategory.INVALID_RESPONSE));
+                TmdbErrorMessages.forCategory(TmdbErrorCategory.INVALID_RESPONSE));
         assertEquals("The TMDB request was interrupted. Try again.",
-                SearchErrorMessages.forCategory(TmdbErrorCategory.INTERRUPTED));
+                TmdbErrorMessages.forCategory(TmdbErrorCategory.INTERRUPTED));
     }
 }

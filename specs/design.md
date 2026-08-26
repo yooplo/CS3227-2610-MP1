@@ -50,7 +50,8 @@ src/main/java/
     └── ui/
         ├── MainWindow.java
         ├── SearchView.java
-        └── SearchErrorMessages.java
+        ├── MovieDetailsView.java
+        └── TmdbErrorMessages.java
 ```
 
 FXML files, if used:
@@ -208,7 +209,15 @@ Search executor, then injects the application service and executor into the UI.
 JavaFX Application Thread. Task completion handlers update controls on the
 JavaFX thread. Runtime TMDB configuration is resolved when a request begins, so
 a missing token becomes a Search error state instead of preventing application
-startup. `SearchErrorMessages` maps stable error categories to safe UI text.
+startup. `TmdbErrorMessages` maps stable error categories to safe UI text shared
+by Search and movie details.
+
+`MainWindow` owns Search-to-details navigation. It retains the same `SearchView`
+instance while swapping the center content to a `MovieDetailsView`, preserving
+the last query and results without another search request. Detail metadata is
+loaded in a JavaFX `Task` on the shared TMDB executor. Poster URLs are constructed
+by `TmdbImageUrls` in the API layer, and JavaFX loads poster images in the
+background with a non-fatal placeholder for missing or failed images.
 
 ### Search view
 

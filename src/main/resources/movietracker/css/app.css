@@ -97,3 +97,64 @@
 .movie-release {
     -fx-text-fill: #647181;
 }
+
+.details-view {
+    -fx-background-color: #f4f6f8;
+}
+
+.back-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #326bb3;
+    -fx-padding: 6px 4px;
+    -fx-cursor: hand;
+}
+
+.details-state {
+    -fx-padding: 28px;
+    -fx-background-color: white;
+    -fx-background-radius: 8px;
+    -fx-border-color: #dce2e8;
+    -fx-border-radius: 8px;
+}
+
+.details-scroll,
+.details-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.details-content {
+    -fx-padding: 4px;
+}
+
+.details-title {
+    -fx-font-size: 27px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #202936;
+}
+
+.details-subheading {
+    -fx-padding: 12px 0 0 0;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #202936;
+}
+
+.details-metadata,
+.details-overview {
+    -fx-text-fill: #4e5c6c;
+}
+
+.details-overview {
+    -fx-line-spacing: 3px;
+}
+
+.poster-area,
+.poster-placeholder {
+    -fx-background-color: #e2e7ec;
+    -fx-background-radius: 6px;
+}
+
+.poster-placeholder {
+    -fx-padding: 16px;
+    -fx-text-fill: #647181;
+}

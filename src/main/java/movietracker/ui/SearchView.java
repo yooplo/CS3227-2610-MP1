@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
@@ -14,6 +15,8 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
@@ -30,6 +33,7 @@ final class SearchView extends VBox {
 
     private final MovieTrackerApplicationService applicationService;
     private final Executor executor;
+    private final Consumer<Movie> movieSelectionHandler;
     private final TextField searchField = new TextField();
     private final Button searchButton = new Button("Search");
     private final ProgressIndicator progressIndicator = new ProgressIndicator();
@@ -38,9 +42,13 @@ final class SearchView extends VBox {
 
     private Task<List<Movie>> activeSearch;
 
-    SearchView(MovieTrackerApplicationService applicationService, Executor executor) {
+    SearchView(MovieTrackerApplicationService applicationService,
+               Executor executor,
+               Consumer<Movie> movieSelectionHandler) {
         this.applicationService = Objects.requireNonNull(applicationService, "applicationService");
         this.executor = Objects.requireNonNull(executor, "executor");
+        this.movieSelectionHandler = Objects.requireNonNull(
+                movieSelectionHandler, "movieSelectionHandler");
 
         getStyleClass().add("section");
         setPadding(new Insets(28));
@@ -88,7 +96,12 @@ final class SearchView extends VBox {
 
     private StackPane configureResultsArea() {
         resultsList.getStyleClass().add("search-results");
-        resultsList.setCellFactory(ignored -> new MovieResultCell());
+        resultsList.setCellFactory(ignored -> new MovieResultCell(movieSelectionHandler));
+        resultsList.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                openSelectedMovie();
+            }
+        });
         resultsList.setVisible(false);
         resultsList.setManaged(false);
 
@@ -136,14 +149,14 @@ final class SearchView extends VBox {
         searchTask.setOnFailed(event -> {
             Throwable failure = searchTask.getException();
             if (failure instanceof TmdbException tmdbException) {
-                showMessage(SearchErrorMessages.forCategory(tmdbException.getCategory()));
+                showMessage(TmdbErrorMessages.forCategory(tmdbException.getCategory()));
             } else {
                 showMessage("Movie search failed unexpectedly. Try again.");
             }
             finishSearch(searchTask);
         });
         searchTask.setOnCancelled(event -> {
-            showMessage(SearchErrorMessages.forCategory(TmdbErrorCategory.INTERRUPTED));
+            showMessage(TmdbErrorMessages.forCategory(TmdbErrorCategory.INTERRUPTED));
             finishSearch(searchTask);
         });
 
@@ -180,7 +193,25 @@ final class SearchView extends VBox {
         resultsList.setVisible(true);
     }
 
+    private void openSelectedMovie() {
+        Movie selectedMovie = resultsList.getSelectionModel().getSelectedItem();
+        if (selectedMovie != null) {
+            movieSelectionHandler.accept(selectedMovie);
+        }
+    }
+
     private static final class MovieResultCell extends ListCell<Movie> {
+
+        private final Consumer<Movie> selectionHandler;
+
+        private MovieResultCell(Consumer<Movie> selectionHandler) {
+            this.selectionHandler = selectionHandler;
+            setOnMouseClicked(event -> {
+                if (event.getButton() == MouseButton.PRIMARY && !isEmpty()) {
+                    selectionHandler.accept(getItem());
+                }
+            });
+        }
 
         @Override
         protected void updateItem(Movie movie, boolean empty) {

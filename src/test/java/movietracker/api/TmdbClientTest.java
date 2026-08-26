@@ -148,6 +148,25 @@ class TmdbClientTest {
     }
 
     @Test
+    void lazyConfig_missingTokenFailsRequestWithoutCallingTransport() {
+        int[] calls = {0};
+        TmdbClient client = new TmdbClient(
+                () -> {
+                    throw TmdbException.forMissingToken();
+                },
+                request -> {
+                    calls[0]++;
+                    return new HttpResult(200, "{\"results\": []}");
+                });
+
+        TmdbException exception = assertThrows(
+                TmdbException.class, () -> client.searchMovies("Fight Club"));
+
+        assertEquals(TmdbErrorCategory.MISSING_TOKEN, exception.getCategory());
+        assertEquals(0, calls[0]);
+    }
+
+    @Test
     void optionalNullFields_mapToEmptyDomainValues() throws Exception {
         String response = """
                 {

@@ -31,7 +31,7 @@ public final class TmdbClient {
     private static final String API_BASE_URL = "https://api.themoviedb.org/3";
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
 
-    private final TmdbConfig config;
+    private final ConfigProvider configProvider;
     private final HttpTransport transport;
     private final ObjectMapper objectMapper;
 
@@ -39,10 +39,9 @@ public final class TmdbClient {
      * Creates a production client using environment configuration and the JDK HTTP client.
      *
      * @return configured TMDB client
-     * @throws TmdbException if the token is missing
      */
-    public static TmdbClient fromEnvironment() throws TmdbException {
-        return new TmdbClient(TmdbConfig.fromEnvironment(), new JdkHttpTransport());
+    public static TmdbClient fromEnvironment() {
+        return new TmdbClient(TmdbConfig::fromEnvironment, new JdkHttpTransport());
     }
 
     /**
@@ -52,7 +51,11 @@ public final class TmdbClient {
      * @param transport HTTP transport
      */
     public TmdbClient(TmdbConfig config, HttpTransport transport) {
-        this.config = Objects.requireNonNull(config, "config");
+        this(constantConfig(config), transport);
+    }
+
+    TmdbClient(ConfigProvider configProvider, HttpTransport transport) {
+        this.configProvider = Objects.requireNonNull(configProvider, "configProvider");
         this.transport = Objects.requireNonNull(transport, "transport");
         this.objectMapper = new ObjectMapper()
                 .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
@@ -134,6 +137,7 @@ public final class TmdbClient {
     }
 
     private String executeGet(URI uri) throws TmdbException {
+        TmdbConfig config = configProvider.load();
         HttpRequest request = HttpRequest.newBuilder(uri)
                 .timeout(REQUEST_TIMEOUT)
                 .header("Authorization", config.authorizationHeaderValue())
@@ -175,5 +179,15 @@ public final class TmdbClient {
 
     private static TmdbException invalidResponse(Exception cause) {
         return TmdbException.forInvalidResponse(cause);
+    }
+
+    private static ConfigProvider constantConfig(TmdbConfig config) {
+        Objects.requireNonNull(config, "config");
+        return () -> config;
+    }
+
+    @FunctionalInterface
+    interface ConfigProvider {
+        TmdbConfig load() throws TmdbException;
     }
 }

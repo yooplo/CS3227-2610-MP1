@@ -2,18 +2,18 @@ package movietracker.ui;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import movietracker.service.MovieTrackerApplicationService;
 
 /**
  * Main single-window shell and navigation for Movie Tracker.
@@ -25,14 +25,16 @@ public final class MainWindow extends BorderPane {
     private final StackPane contentArea = new StackPane();
     private final Map<Section, Button> navigationButtons = new EnumMap<>(Section.class);
     private final Map<Section, Node> sectionViews = new EnumMap<>(Section.class);
+    private final SearchView searchView;
 
     /**
      * Creates the application shell with placeholder section views.
      */
-    public MainWindow() {
+    public MainWindow(MovieTrackerApplicationService applicationService, Executor searchExecutor) {
         getStyleClass().add("main-window");
 
-        sectionViews.put(Section.SEARCH, createSearchView());
+        searchView = new SearchView(applicationService, searchExecutor);
+        sectionViews.put(Section.SEARCH, searchView);
         sectionViews.put(Section.WATCHLIST, createCollectionView(
                 "Watchlist", "Movies saved to your Watchlist will appear here."));
         sectionViews.put(Section.WATCHED, createCollectionView(
@@ -41,6 +43,13 @@ public final class MainWindow extends BorderPane {
         setLeft(createNavigation());
         setCenter(contentArea);
         showSection(Section.SEARCH);
+    }
+
+    /**
+     * Cancels UI work when the application is stopping.
+     */
+    public void close() {
+        searchView.cancelActiveSearch();
     }
 
     private VBox createNavigation() {
@@ -62,30 +71,6 @@ public final class MainWindow extends BorderPane {
             navigation.getChildren().add(button);
         }
         return navigation;
-    }
-
-    private Node createSearchView() {
-        Label heading = createHeading("Search");
-        Label description = new Label("Find a movie by title.");
-        description.getStyleClass().add("section-description");
-
-        TextField searchField = new TextField();
-        searchField.setPromptText("Search movies");
-        searchField.setAccessibleText("Movie title");
-        HBox.setHgrow(searchField, Priority.ALWAYS);
-
-        Button searchButton = new Button("Search");
-        searchButton.setDefaultButton(true);
-        searchButton.setAccessibleHelp("Movie search will be connected in a later increment.");
-
-        HBox searchControls = new HBox(10, searchField, searchButton);
-        searchControls.setAlignment(Pos.CENTER_LEFT);
-        searchControls.setMaxWidth(760);
-
-        Label placeholder = createEmptyState("Search results will appear here.");
-        VBox.setVgrow(placeholder, Priority.ALWAYS);
-
-        return createSection(heading, description, searchControls, placeholder);
     }
 
     private Node createCollectionView(String headingText, String emptyStateText) {

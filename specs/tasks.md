@@ -94,20 +94,20 @@ without coordinating the TMDB client and local tracking service directly.
 - [x] Add Search, Watchlist, Watched navigation.
 - [x] Add CSS for compact desktop layout.
 - [x] Make main content responsive to resizing.
-- [ ] Keep controllers thin and delegate behavior to service layer.
+- [x] Keep controllers thin and delegate behavior to service layer.
 
 **Covers:** FR-NAV, NFR-USABILITY.
 
 ## Phase 7 — Search UI
 
-- [ ] Add search field/button.
-- [ ] Validate empty input locally.
-- [ ] Execute TMDB request off the JavaFX Application Thread.
-- [ ] Show loading state.
-- [ ] Render result rows/cards.
+- [x] Add search field/button.
+- [x] Validate empty input locally.
+- [x] Execute TMDB request off the JavaFX Application Thread.
+- [x] Show loading state.
+- [x] Render result rows/cards.
 - [ ] Render poster or placeholder.
-- [ ] Add empty-results state.
-- [ ] Add network/API error state.
+- [x] Add empty-results state.
+- [x] Add network/API error state.
 
 **Covers:** FR-SEARCH.
 

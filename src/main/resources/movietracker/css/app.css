@@ -66,3 +66,34 @@
     -fx-border-radius: 8px;
     -fx-text-fill: #647181;
 }
+
+.search-results {
+    -fx-background-color: white;
+    -fx-border-color: #dce2e8;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+}
+
+.search-results .list-cell {
+    -fx-padding: 0;
+    -fx-background-color: white;
+    -fx-border-color: transparent transparent #e7ebef transparent;
+}
+
+.search-results .list-cell:selected {
+    -fx-background-color: #edf4fd;
+}
+
+.movie-result {
+    -fx-padding: 14px 16px;
+}
+
+.movie-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #202936;
+}
+
+.movie-release {
+    -fx-text-fill: #647181;
+}

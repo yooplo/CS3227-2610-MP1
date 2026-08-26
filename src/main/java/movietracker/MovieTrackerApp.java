@@ -1,8 +1,16 @@
 package movietracker;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import movietracker.api.TmdbClient;
+import movietracker.service.MovieTrackerApplicationService;
+import movietracker.service.MovieTrackerService;
+import movietracker.storage.LocalStorage;
+import movietracker.storage.StorageException;
 import movietracker.ui.MainWindow;
 
 /**
@@ -16,15 +24,26 @@ public final class MovieTrackerApp extends Application {
     private static final double MINIMUM_WIDTH = 720;
     private static final double MINIMUM_HEIGHT = 480;
 
+    private ExecutorService searchExecutor;
+    private MainWindow mainWindow;
+
     /**
      * Starts the JavaFX application.
      *
      * @param primaryStage the primary application window
      */
     @Override
-    public void start(Stage primaryStage) {
-        MainWindow root = new MainWindow();
-        Scene scene = new Scene(root, INITIAL_WIDTH, INITIAL_HEIGHT);
+    public void start(Stage primaryStage) throws StorageException {
+        MovieTrackerService trackingService = new MovieTrackerService(new LocalStorage());
+        MovieTrackerApplicationService applicationService = new MovieTrackerApplicationService(
+                TmdbClient.fromEnvironment(), trackingService);
+        searchExecutor = Executors.newSingleThreadExecutor(runnable -> Thread.ofPlatform()
+                .daemon(true)
+                .name("tmdb-search")
+                .unstarted(runnable));
+
+        mainWindow = new MainWindow(applicationService, searchExecutor);
+        Scene scene = new Scene(mainWindow, INITIAL_WIDTH, INITIAL_HEIGHT);
         scene.getStylesheets().add(getClass()
                 .getResource("/movietracker/css/app.css")
                 .toExternalForm());
@@ -35,6 +54,16 @@ public final class MovieTrackerApp extends Application {
         primaryStage.setMinHeight(MINIMUM_HEIGHT);
         primaryStage.setResizable(true);
         primaryStage.show();
+    }
+
+    @Override
+    public void stop() {
+        if (mainWindow != null) {
+            mainWindow.close();
+        }
+        if (searchExecutor != null) {
+            searchExecutor.shutdownNow();
+        }
     }
 
     /**

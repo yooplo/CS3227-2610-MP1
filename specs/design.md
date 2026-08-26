@@ -48,7 +48,9 @@ src/main/java/
     │   ├── LocalStorage.java
     │   └── StorageException.java
     └── ui/
-        └── MainWindow.java
+        ├── MainWindow.java
+        ├── SearchView.java
+        └── SearchErrorMessages.java
 ```
 
 FXML files, if used:
@@ -198,6 +200,15 @@ left navigation swaps the center content among Search, Watchlist, and Watched
 placeholders in the same scene. This keeps the small shell in one focused class;
 feature-specific views or controllers can be introduced when those sections gain
 behavior. Basic structural styling lives in `movietracker/css/app.css`.
+
+`MovieTrackerApp` is the composition root: it creates `LocalStorage`,
+`MovieTrackerService`, `TmdbClient`, `MovieTrackerApplicationService`, and the
+Search executor, then injects the application service and executor into the UI.
+`SearchView` uses a JavaFX `Task` on that executor so TMDB work never blocks the
+JavaFX Application Thread. Task completion handlers update controls on the
+JavaFX thread. Runtime TMDB configuration is resolved when a request begins, so
+a missing token becomes a Search error state instead of preventing application
+startup. `SearchErrorMessages` maps stable error categories to safe UI text.
 
 ### Search view
 

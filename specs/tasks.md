@@ -94,6 +94,7 @@ without coordinating the TMDB client and local tracking service directly.
 - [x] Add Search, Watchlist, Watched navigation.
 - [x] Add CSS for compact desktop layout.
 - [x] Make main content responsive to resizing.
+- [x] Polish navigation, feedback states, controls, and collection/detail presentation.
 - [x] Keep controllers thin and delegate behavior to service layer.
 
 **Covers:** FR-NAV, NFR-USABILITY.

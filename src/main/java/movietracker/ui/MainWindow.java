@@ -77,8 +77,8 @@ public final class MainWindow extends BorderPane {
 
         VBox navigation = new VBox(8, title);
         navigation.getStyleClass().add("navigation");
-        navigation.setPrefWidth(200);
-        navigation.setMinWidth(170);
+        navigation.setPrefWidth(184);
+        navigation.setMinWidth(156);
 
         for (Section section : Section.values()) {
             Button button = new Button(section.label);

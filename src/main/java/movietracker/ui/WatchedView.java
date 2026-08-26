@@ -64,6 +64,7 @@ final class WatchedView extends VBox {
         operationProgress.setMaxSize(20, 20);
         operationMessage.setWrapText(true);
         operationState.setAlignment(Pos.CENTER_LEFT);
+        operationState.getStyleClass().add("operation-state");
         operationState.getChildren().addAll(operationProgress, operationMessage);
         setOperationStateVisible(false);
 
@@ -218,6 +219,7 @@ final class WatchedView extends VBox {
             HBox.setHgrow(spacer, Priority.ALWAYS);
             Button remove = new Button("Remove");
             remove.getStyleClass().add("remove-action");
+            remove.setAccessibleText("Remove " + movie.getTitle() + " from Watched");
             remove.setOnAction(event -> removalHandler.accept(trackedMovie));
 
             HBox row = new HBox(

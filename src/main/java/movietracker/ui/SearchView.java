@@ -79,11 +79,11 @@ final class SearchView extends VBox {
         HBox.setHgrow(searchField, Priority.ALWAYS);
 
         searchButton.setDefaultButton(true);
+        searchButton.getStyleClass().add("primary-action");
         searchButton.setOnAction(event -> submitSearch());
 
         progressIndicator.setMaxSize(24, 24);
         progressIndicator.setVisible(false);
-        progressIndicator.setManaged(false);
         progressIndicator.getStyleClass().add("search-progress");
     }
 
@@ -106,6 +106,8 @@ final class SearchView extends VBox {
         resultsList.setManaged(false);
 
         stateMessage.getStyleClass().add("empty-state");
+        stateMessage.getStyleClass().add("state-message");
+        stateMessage.getStyleClass().add("state-neutral");
         stateMessage.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         stateMessage.setAlignment(Pos.CENTER);
         stateMessage.setWrapText(true);
@@ -122,7 +124,7 @@ final class SearchView extends VBox {
 
         String query = searchField.getText() == null ? "" : searchField.getText().trim();
         if (query.isEmpty()) {
-            showMessage("Enter a movie title to search.");
+            showMessage("Enter a movie title to search.", "state-warning");
             return;
         }
 
@@ -134,12 +136,12 @@ final class SearchView extends VBox {
         };
         activeSearch = searchTask;
         setSearching(true);
-        showMessage("Searching TMDB…");
+        showMessage("Searching TMDB…", "state-loading");
 
         searchTask.setOnSucceeded(event -> {
             List<Movie> movies = searchTask.getValue();
             if (movies.isEmpty()) {
-                showMessage("No movies found for \"" + query + "\".");
+                showMessage("No movies found for \"" + query + "\".", "state-neutral");
             } else {
                 resultsList.getItems().setAll(movies);
                 showResults();
@@ -149,14 +151,18 @@ final class SearchView extends VBox {
         searchTask.setOnFailed(event -> {
             Throwable failure = searchTask.getException();
             if (failure instanceof TmdbException tmdbException) {
-                showMessage(TmdbErrorMessages.forCategory(tmdbException.getCategory()));
+                showMessage(
+                        TmdbErrorMessages.forCategory(tmdbException.getCategory()),
+                        "state-error");
             } else {
-                showMessage("Movie search failed unexpectedly. Try again.");
+                showMessage("Movie search failed unexpectedly. Try again.", "state-error");
             }
             finishSearch(searchTask);
         });
         searchTask.setOnCancelled(event -> {
-            showMessage(TmdbErrorMessages.forCategory(TmdbErrorCategory.INTERRUPTED));
+            showMessage(
+                    TmdbErrorMessages.forCategory(TmdbErrorCategory.INTERRUPTED),
+                    "state-error");
             finishSearch(searchTask);
         });
 
@@ -166,7 +172,6 @@ final class SearchView extends VBox {
     private void setSearching(boolean searching) {
         searchField.setDisable(searching);
         searchButton.setDisable(searching);
-        progressIndicator.setManaged(searching);
         progressIndicator.setVisible(searching);
     }
 
@@ -177,11 +182,14 @@ final class SearchView extends VBox {
         }
     }
 
-    private void showMessage(String message) {
+    private void showMessage(String message, String stateStyle) {
         resultsList.getItems().clear();
         resultsList.setManaged(false);
         resultsList.setVisible(false);
         stateMessage.setText(message);
+        stateMessage.getStyleClass().removeAll(
+                "state-neutral", "state-loading", "state-warning", "state-error");
+        stateMessage.getStyleClass().add(stateStyle);
         stateMessage.setManaged(true);
         stateMessage.setVisible(true);
     }
@@ -224,6 +232,7 @@ final class SearchView extends VBox {
 
             Label title = new Label(movie.getTitle());
             title.getStyleClass().add("movie-title");
+            title.setWrapText(true);
             Label release = new Label(movie.getReleaseDate()
                     .map(MovieResultCell::formatReleaseYear)
                     .orElse("Release date unavailable"));

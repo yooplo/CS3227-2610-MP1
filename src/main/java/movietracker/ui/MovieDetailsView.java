@@ -16,6 +16,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
@@ -116,7 +117,9 @@ final class MovieDetailsView extends BorderPane {
     private void showLoading() {
         ProgressIndicator progress = new ProgressIndicator();
         progress.setMaxSize(42, 42);
+        progress.getStyleClass().add("application-progress");
         Label message = new Label("Loading details for " + selectedMovie.getTitle() + "…");
+        message.getStyleClass().add("loading-message");
         VBox loading = new VBox(12, progress, message);
         loading.getStyleClass().add("details-state");
         loading.setAlignment(Pos.CENTER);
@@ -125,6 +128,7 @@ final class MovieDetailsView extends BorderPane {
 
     private void showFailure(String message) {
         Label error = new Label(message);
+        error.getStyleClass().add("error-message");
         error.setWrapText(true);
         Button retry = new Button("Try again");
         retry.setOnAction(event -> loadDetails());
@@ -140,6 +144,7 @@ final class MovieDetailsView extends BorderPane {
 
         HBox summary = new HBox(24, new PosterView(
                 details.getMovie().getPosterPath(), POSTER_WIDTH, POSTER_HEIGHT), text);
+        summary.getStyleClass().add("details-summary");
         summary.setAlignment(Pos.TOP_LEFT);
 
         VBox detailsContent = new VBox(20, summary);
@@ -168,6 +173,8 @@ final class MovieDetailsView extends BorderPane {
         Label voteAverage = createMetadata("TMDB rating", details.getTmdbVoteAverage().isPresent()
                 ? String.format(Locale.ROOT, "%.1f / 10", details.getTmdbVoteAverage().getAsDouble())
                 : "Unavailable");
+        VBox metadata = new VBox(6, releaseDate, runtime, genres, voteAverage);
+        metadata.getStyleClass().add("metadata-group");
 
         Label overviewHeading = new Label("Overview");
         overviewHeading.getStyleClass().add("details-subheading");
@@ -180,8 +187,7 @@ final class MovieDetailsView extends BorderPane {
         refreshTrackingActions(trackingActions, movie, null, false);
 
         VBox text = new VBox(
-                10, title, releaseDate, runtime, genres, voteAverage,
-                overviewHeading, overview, trackingActions);
+                12, title, metadata, overviewHeading, overview, trackingActions);
         text.setMinWidth(0);
         return text;
     }
@@ -216,8 +222,8 @@ final class MovieDetailsView extends BorderPane {
             addButton.getStyleClass().add("primary-action");
             addButton.setOnAction(event -> addToWatchlist(actions, movie));
 
-            HBox availableActions = new HBox(
-                    10, addButton, createMarkWatchedButton(actions, movie));
+            FlowPane availableActions = new FlowPane(
+                    10, 8, addButton, createMarkWatchedButton(actions, movie));
             availableActions.setAlignment(Pos.CENTER_LEFT);
             actions.getChildren().add(availableActions);
         }
@@ -291,7 +297,7 @@ final class MovieDetailsView extends BorderPane {
         saveButton.setOnAction(event -> setPersonalRating(
                 actions, movie, ratingSelector.getValue()));
 
-        HBox controls = new HBox(10, ratingSelector, saveButton);
+        FlowPane controls = new FlowPane(10, 8, ratingSelector, saveButton);
         controls.setAlignment(Pos.CENTER_LEFT);
         if (currentRating.isPresent()) {
             Button clearButton = new Button("Clear rating");

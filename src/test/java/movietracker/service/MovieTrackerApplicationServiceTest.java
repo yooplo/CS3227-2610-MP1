@@ -79,6 +79,11 @@ class MovieTrackerApplicationServiceTest {
         assertEquals(List.of(watched), application.getWatched());
         assertTrue(application.isTracked(550));
         assertFalse(application.isTracked(999));
+        assertEquals(WatchStatus.WATCHLIST,
+                application.getTrackingStatus(550).orElseThrow());
+        assertEquals(WatchStatus.WATCHED,
+                application.getTrackingStatus(680).orElseThrow());
+        assertTrue(application.getTrackingStatus(999).isEmpty());
     }
 
     @Test
@@ -138,6 +143,7 @@ class MovieTrackerApplicationServiceTest {
 
         assertSame(failure, actual);
         assertTrue(application.getTrackedMovies().isEmpty());
+        assertTrue(application.getTrackingStatus(550).isEmpty());
     }
 
     private static MovieTrackerApplicationService application(

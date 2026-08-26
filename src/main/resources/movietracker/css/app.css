@@ -158,3 +158,33 @@
     -fx-padding: 16px;
     -fx-text-fill: #647181;
 }
+
+.tracking-actions {
+    -fx-padding: 8px 0 0 0;
+}
+
+.primary-action {
+    -fx-background-color: #3f77c4;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.primary-action:hover {
+    -fx-background-color: #326bb3;
+}
+
+.tracking-state {
+    -fx-padding: 8px 12px;
+    -fx-background-color: #e4f1e8;
+    -fx-background-radius: 6px;
+    -fx-text-fill: #23633a;
+    -fx-font-weight: bold;
+}
+
+.tracking-feedback {
+    -fx-text-fill: #23633a;
+}
+
+.tracking-error {
+    -fx-text-fill: #a12b2b;
+}

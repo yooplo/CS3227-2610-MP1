@@ -29,18 +29,21 @@ public final class MainWindow extends BorderPane {
     private final Map<Section, Node> sectionViews = new EnumMap<>(Section.class);
     private final SearchView searchView;
     private final MovieTrackerApplicationService applicationService;
-    private final Executor tmdbExecutor;
+    private final Executor applicationExecutor;
     private MovieDetailsView detailsView;
 
     /**
      * Creates the application shell with placeholder section views.
      */
-    public MainWindow(MovieTrackerApplicationService applicationService, Executor tmdbExecutor) {
+    public MainWindow(MovieTrackerApplicationService applicationService,
+                      Executor applicationExecutor) {
         this.applicationService = Objects.requireNonNull(applicationService, "applicationService");
-        this.tmdbExecutor = Objects.requireNonNull(tmdbExecutor, "tmdbExecutor");
+        this.applicationExecutor = Objects.requireNonNull(
+                applicationExecutor, "applicationExecutor");
         getStyleClass().add("main-window");
 
-        searchView = new SearchView(applicationService, tmdbExecutor, this::showMovieDetails);
+        searchView = new SearchView(
+                applicationService, applicationExecutor, this::showMovieDetails);
         sectionViews.put(Section.SEARCH, searchView);
         sectionViews.put(Section.WATCHLIST, createCollectionView(
                 "Watchlist", "Movies saved to your Watchlist will appear here."));
@@ -128,7 +131,7 @@ public final class MainWindow extends BorderPane {
     private void showMovieDetails(Movie movie) {
         closeDetailsView();
         detailsView = new MovieDetailsView(
-                movie, applicationService, tmdbExecutor, this::returnToSearch);
+                movie, applicationService, applicationExecutor, this::returnToSearch);
         contentArea.getChildren().setAll(detailsView);
     }
 

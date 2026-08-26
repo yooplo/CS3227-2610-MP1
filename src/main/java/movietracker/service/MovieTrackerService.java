@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 
@@ -59,6 +60,17 @@ public final class MovieTrackerService {
     public boolean isTracked(int tmdbId) {
         validateTmdbId(tmdbId);
         return findIndex(tmdbId) >= 0;
+    }
+
+    /**
+     * Returns the current tracking status for a TMDB movie ID.
+     */
+    public Optional<WatchStatus> getTrackingStatus(int tmdbId) {
+        validateTmdbId(tmdbId);
+        int index = findIndex(tmdbId);
+        return index < 0
+                ? Optional.empty()
+                : Optional.of(trackedMovies.get(index).getStatus());
     }
 
     /**

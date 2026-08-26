@@ -2,12 +2,14 @@ package movietracker.service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import movietracker.api.TmdbClient;
 import movietracker.api.TmdbException;
 import movietracker.model.Movie;
 import movietracker.model.MovieDetails;
 import movietracker.model.TrackedMovie;
+import movietracker.model.WatchStatus;
 import movietracker.storage.StorageException;
 
 /**
@@ -56,6 +58,10 @@ public final class MovieTrackerApplicationService {
 
     public boolean isTracked(int tmdbId) {
         return movieTrackerService.isTracked(tmdbId);
+    }
+
+    public Optional<WatchStatus> getTrackingStatus(int tmdbId) {
+        return movieTrackerService.getTrackingStatus(tmdbId);
     }
 
     public boolean addToWatchlist(Movie movie) throws StorageException {

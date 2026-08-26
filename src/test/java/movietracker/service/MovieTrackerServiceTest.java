@@ -140,6 +140,11 @@ class MovieTrackerServiceTest {
         assertEquals(List.of(watched), service.getWatched());
         assertTrue(service.isTracked(550));
         assertFalse(service.isTracked(999));
+        assertEquals(WatchStatus.WATCHLIST,
+                service.getTrackingStatus(550).orElseThrow());
+        assertEquals(WatchStatus.WATCHED,
+                service.getTrackingStatus(680).orElseThrow());
+        assertTrue(service.getTrackingStatus(999).isEmpty());
     }
 
     @Test

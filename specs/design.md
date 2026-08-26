@@ -204,7 +204,7 @@ behavior. Basic structural styling lives in `movietracker/css/app.css`.
 
 `MovieTrackerApp` is the composition root: it creates `LocalStorage`,
 `MovieTrackerService`, `TmdbClient`, `MovieTrackerApplicationService`, and the
-Search executor, then injects the application service and executor into the UI.
+application executor, then injects the application service and executor into the UI.
 `SearchView` uses a JavaFX `Task` on that executor so TMDB work never blocks the
 JavaFX Application Thread. Task completion handlers update controls on the
 JavaFX thread. Runtime TMDB configuration is resolved when a request begins, so
@@ -215,9 +215,17 @@ by Search and movie details.
 `MainWindow` owns Search-to-details navigation. It retains the same `SearchView`
 instance while swapping the center content to a `MovieDetailsView`, preserving
 the last query and results without another search request. Detail metadata is
-loaded in a JavaFX `Task` on the shared TMDB executor. Poster URLs are constructed
+loaded in a JavaFX `Task` on the shared application executor. Poster URLs are constructed
 by `TmdbImageUrls` in the API layer, and JavaFX loads poster images in the
 background with a non-fatal placeholder for missing or failed images.
+
+`MovieDetailsView` queries current tracking status through
+`MovieTrackerApplicationService` and delegates Watchlist additions to that same
+boundary. Persistence-backed mutations run as JavaFX tasks on the shared
+application executor so file I/O does not block the JavaFX Application Thread.
+The service persists before publishing its new in-memory state; therefore the UI
+shows Watchlist success only after the task succeeds and retains the prior state
+when `StorageException` is reported.
 
 ### Search view
 

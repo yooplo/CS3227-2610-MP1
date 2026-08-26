@@ -26,7 +26,9 @@ import movietracker.api.TmdbException;
 import movietracker.api.TmdbImageUrls;
 import movietracker.model.Movie;
 import movietracker.model.MovieDetails;
+import movietracker.model.WatchStatus;
 import movietracker.service.MovieTrackerApplicationService;
+import movietracker.storage.StorageException;
 
 /**
  * Loads and displays detailed TMDB information for one selected movie.
@@ -43,6 +45,7 @@ final class MovieDetailsView extends BorderPane {
     private final StackPane contentArea = new StackPane();
 
     private Task<MovieDetails> activeLoad;
+    private Task<Boolean> activeTrackingMutation;
 
     MovieDetailsView(Movie selectedMovie,
                      MovieTrackerApplicationService applicationService,
@@ -69,6 +72,9 @@ final class MovieDetailsView extends BorderPane {
     void cancelActiveLoad() {
         if (activeLoad != null) {
             activeLoad.cancel(true);
+        }
+        if (activeTrackingMutation != null) {
+            activeTrackingMutation.cancel(true);
         }
     }
 
@@ -143,7 +149,7 @@ final class MovieDetailsView extends BorderPane {
         contentArea.getChildren().setAll(scrollPane);
     }
 
-    private static VBox createDetailsText(MovieDetails details) {
+    private VBox createDetailsText(MovieDetails details) {
         Movie movie = details.getMovie();
         Label title = new Label(movie.getTitle());
         title.getStyleClass().add("details-title");
@@ -167,10 +173,91 @@ final class MovieDetailsView extends BorderPane {
         overview.getStyleClass().add("details-overview");
         overview.setWrapText(true);
 
+        VBox trackingActions = new VBox(8);
+        trackingActions.getStyleClass().add("tracking-actions");
+        refreshTrackingActions(trackingActions, movie, null, false);
+
         VBox text = new VBox(
-                10, title, releaseDate, runtime, genres, voteAverage, overviewHeading, overview);
+                10, title, releaseDate, runtime, genres, voteAverage,
+                overviewHeading, overview, trackingActions);
         text.setMinWidth(0);
         return text;
+    }
+
+    private void refreshTrackingActions(VBox actions,
+                                        Movie movie,
+                                        String feedback,
+                                        boolean errorFeedback) {
+        actions.getChildren().clear();
+
+        Label heading = new Label("Tracking");
+        heading.getStyleClass().add("details-subheading");
+        actions.getChildren().add(heading);
+
+        applicationService.getTrackingStatus(movie.getTmdbId()).ifPresentOrElse(status -> {
+            Label state = new Label(status == WatchStatus.WATCHLIST
+                    ? "In Watchlist"
+                    : "Already Watched");
+            state.getStyleClass().add("tracking-state");
+            actions.getChildren().add(state);
+        }, () -> {
+            Button addButton = new Button("Add to Watchlist");
+            addButton.getStyleClass().add("primary-action");
+            addButton.setOnAction(event -> addToWatchlist(actions, movie));
+            actions.getChildren().add(addButton);
+        });
+
+        if (feedback != null) {
+            Label message = new Label(feedback);
+            message.setWrapText(true);
+            message.getStyleClass().add(errorFeedback
+                    ? "tracking-error"
+                    : "tracking-feedback");
+            actions.getChildren().add(message);
+        }
+    }
+
+    private void addToWatchlist(VBox actions, Movie movie) {
+        if (activeTrackingMutation != null && !activeTrackingMutation.isDone()) {
+            return;
+        }
+
+        ProgressIndicator progress = new ProgressIndicator();
+        progress.setMaxSize(24, 24);
+        Label message = new Label("Adding to Watchlist…");
+        HBox addingState = new HBox(10, progress, message);
+        addingState.setAlignment(Pos.CENTER_LEFT);
+
+        Label heading = new Label("Tracking");
+        heading.getStyleClass().add("details-subheading");
+        actions.getChildren().setAll(heading, addingState);
+
+        Task<Boolean> addTask = new Task<>() {
+            @Override
+            protected Boolean call() throws StorageException {
+                return applicationService.addToWatchlist(movie);
+            }
+        };
+        activeTrackingMutation = addTask;
+
+        addTask.setOnSucceeded(event -> {
+            String feedback = addTask.getValue()
+                    ? "Added to Watchlist."
+                    : null;
+            refreshTrackingActions(actions, movie, feedback, false);
+            finishTrackingMutation(addTask);
+        });
+        addTask.setOnFailed(event -> {
+            Throwable failure = addTask.getException();
+            String error = failure instanceof StorageException
+                    ? UiErrorMessages.trackingSaveFailure()
+                    : UiErrorMessages.unexpectedTrackingFailure();
+            refreshTrackingActions(actions, movie, error, true);
+            finishTrackingMutation(addTask);
+        });
+        addTask.setOnCancelled(event -> finishTrackingMutation(addTask));
+
+        executor.execute(addTask);
     }
 
     private static Label createMetadata(String label, String value) {
@@ -227,6 +314,12 @@ final class MovieDetailsView extends BorderPane {
     private void finishLoad(Task<MovieDetails> completedLoad) {
         if (activeLoad == completedLoad) {
             activeLoad = null;
+        }
+    }
+
+    private void finishTrackingMutation(Task<Boolean> completedMutation) {
+        if (activeTrackingMutation == completedMutation) {
+            activeTrackingMutation = null;
         }
     }
 }

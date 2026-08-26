@@ -48,10 +48,7 @@ src/main/java/
     │   ├── LocalStorage.java
     │   └── StorageException.java
     └── ui/
-        ├── MainWindowController.java
-        ├── SearchViewController.java
-        ├── CollectionViewController.java
-        └── MovieDetailController.java
+        └── MainWindow.java
 ```
 
 FXML files, if used:
@@ -195,6 +192,12 @@ Recommended sections:
 - Watched
 
 The structure should feel similar in simplicity to the CS2103/T iP GUI, but adapted to movie cards/lists rather than chatbot bubbles.
+
+The initial shell uses a programmatic JavaFX `MainWindow` rather than FXML. Its
+left navigation swaps the center content among Search, Watchlist, and Watched
+placeholders in the same scene. This keeps the small shell in one focused class;
+feature-specific views or controllers can be introduced when those sections gain
+behavior. Basic structural styling lives in `movietracker/css/app.css`.
 
 ### Search view
 

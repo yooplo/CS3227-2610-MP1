@@ -1,11 +1,9 @@
 package movietracker;
 
 import javafx.application.Application;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import movietracker.ui.MainWindow;
 
 /**
  * JavaFX application entry point for Movie Tracker.
@@ -13,7 +11,10 @@ import javafx.stage.Stage;
 public final class MovieTrackerApp extends Application {
 
     private static final String APPLICATION_TITLE = "Movie Tracker";
-    private static final String PLACEHOLDER_TEXT = "Movie Tracker is under development.";
+    private static final double INITIAL_WIDTH = 960;
+    private static final double INITIAL_HEIGHT = 640;
+    private static final double MINIMUM_WIDTH = 720;
+    private static final double MINIMUM_HEIGHT = 480;
 
     /**
      * Starts the JavaFX application.
@@ -22,14 +23,17 @@ public final class MovieTrackerApp extends Application {
      */
     @Override
     public void start(Stage primaryStage) {
-        Label placeholder = new Label(PLACEHOLDER_TEXT);
-        StackPane root = new StackPane(placeholder);
-        root.setAlignment(Pos.CENTER);
+        MainWindow root = new MainWindow();
+        Scene scene = new Scene(root, INITIAL_WIDTH, INITIAL_HEIGHT);
+        scene.getStylesheets().add(getClass()
+                .getResource("/movietracker/css/app.css")
+                .toExternalForm());
 
         primaryStage.setTitle(APPLICATION_TITLE);
-        primaryStage.setScene(new Scene(root, 640, 400));
-        primaryStage.setMinWidth(400);
-        primaryStage.setMinHeight(250);
+        primaryStage.setScene(scene);
+        primaryStage.setMinWidth(MINIMUM_WIDTH);
+        primaryStage.setMinHeight(MINIMUM_HEIGHT);
+        primaryStage.setResizable(true);
         primaryStage.show();
     }
 

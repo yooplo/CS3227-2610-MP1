@@ -90,10 +90,10 @@ without coordinating the TMDB client and local tracking service directly.
 
 ## Phase 6 — Main JavaFX shell
 
-- [ ] Build the main window.
-- [ ] Add Search, Watchlist, Watched navigation.
-- [ ] Add CSS for compact desktop layout.
-- [ ] Make main content responsive to resizing.
+- [x] Build the main window.
+- [x] Add Search, Watchlist, Watched navigation.
+- [x] Add CSS for compact desktop layout.
+- [x] Make main content responsive to resizing.
 - [ ] Keep controllers thin and delegate behavior to service layer.
 
 **Covers:** FR-NAV, NFR-USABILITY.

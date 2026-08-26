@@ -67,7 +67,7 @@ final class WatchlistView extends VBox {
         operationState.getChildren().addAll(operationProgress, operationMessage);
         setOperationStateVisible(false);
 
-        movieList.getStyleClass().addAll("watchlist-movies", "search-results");
+        movieList.getStyleClass().addAll("collection-movies", "search-results");
         movieList.setCellFactory(ignored -> new WatchlistCell(
                 movieSelectionHandler, this::removeFromWatchlist));
         movieList.setOnKeyPressed(event -> {
@@ -219,7 +219,7 @@ final class WatchlistView extends VBox {
                     text,
                     spacer,
                     remove);
-            row.getStyleClass().addAll("movie-result", "watchlist-row");
+            row.getStyleClass().addAll("movie-result", "collection-row");
             row.setAlignment(Pos.CENTER_LEFT);
             setText(null);
             setGraphic(row);

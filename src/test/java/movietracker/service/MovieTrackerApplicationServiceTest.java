@@ -94,6 +94,9 @@ class MovieTrackerApplicationServiceTest {
 
         assertTrue(application.addToWatchlist(FIGHT_CLUB));
         assertTrue(application.markWatched(FIGHT_CLUB));
+        assertTrue(application.getWatchlist().isEmpty());
+        assertEquals(List.of(tracked(FIGHT_CLUB, WatchStatus.WATCHED, null)),
+                application.getWatched());
         assertTrue(application.setPersonalRating(550, 9));
         assertEquals(9, application.getWatched().getFirst().getPersonalRating().orElseThrow());
         assertTrue(application.removeTrackedMovie(550));

@@ -133,9 +133,9 @@ without coordinating the TMDB client and local tracking service directly.
 
 ## Phase 10 — Watched UI
 
-- [ ] Render persisted Watched movies.
-- [ ] Clicking a Watched item opens detail view.
-- [ ] Marking watched from Watchlist moves it between sections immediately.
+- [x] Render persisted Watched movies.
+- [x] Clicking a Watched item opens detail view.
+- [x] Marking watched from Watchlist moves it between sections immediately.
 - [ ] Add remove action.
 
 **Covers:** FR-WATCHED, FR-DETAIL-03.

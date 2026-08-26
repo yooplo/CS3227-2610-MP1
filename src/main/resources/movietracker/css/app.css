@@ -189,11 +189,11 @@
     -fx-text-fill: #a12b2b;
 }
 
-.watchlist-movies {
+.collection-movies {
     -fx-cursor: hand;
 }
 
-.watchlist-row {
+.collection-row {
     -fx-min-height: 116px;
 }
 

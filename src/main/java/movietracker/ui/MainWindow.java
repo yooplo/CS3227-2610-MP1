@@ -5,13 +5,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import movietracker.model.Movie;
@@ -29,6 +27,7 @@ public final class MainWindow extends BorderPane {
     private final Map<Section, Node> sectionViews = new EnumMap<>(Section.class);
     private final SearchView searchView;
     private final WatchlistView watchlistView;
+    private final WatchedView watchedView;
     private final MovieTrackerApplicationService applicationService;
     private final Executor applicationExecutor;
     private MovieDetailsView detailsView;
@@ -50,10 +49,12 @@ public final class MainWindow extends BorderPane {
         watchlistView = new WatchlistView(
                 applicationService, applicationExecutor,
                 movie -> showMovieDetails(movie, Section.WATCHLIST));
+        watchedView = new WatchedView(
+                applicationService,
+                movie -> showMovieDetails(movie, Section.WATCHED));
         sectionViews.put(Section.SEARCH, searchView);
         sectionViews.put(Section.WATCHLIST, watchlistView);
-        sectionViews.put(Section.WATCHED, createCollectionView(
-                "Watched", "Movies marked as Watched will appear here."));
+        sectionViews.put(Section.WATCHED, watchedView);
 
         setLeft(createNavigation());
         setCenter(contentArea);
@@ -90,43 +91,12 @@ public final class MainWindow extends BorderPane {
         return navigation;
     }
 
-    private Node createCollectionView(String headingText, String emptyStateText) {
-        Label heading = createHeading(headingText);
-        Label description = new Label("Your locally tracked movies.");
-        description.getStyleClass().add("section-description");
-
-        Label placeholder = createEmptyState(emptyStateText);
-        VBox.setVgrow(placeholder, Priority.ALWAYS);
-
-        return createSection(heading, description, placeholder);
-    }
-
-    private static VBox createSection(Node... children) {
-        VBox section = new VBox(12, children);
-        section.getStyleClass().add("section");
-        section.setPadding(new Insets(28));
-        return section;
-    }
-
-    private static Label createHeading(String text) {
-        Label heading = new Label(text);
-        heading.getStyleClass().add("section-heading");
-        return heading;
-    }
-
-    private static Label createEmptyState(String text) {
-        Label placeholder = new Label(text);
-        placeholder.getStyleClass().add("empty-state");
-        placeholder.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        placeholder.setAlignment(Pos.CENTER);
-        placeholder.setWrapText(true);
-        return placeholder;
-    }
-
     private void showSection(Section section) {
         closeDetailsView();
         if (section == Section.WATCHLIST) {
             watchlistView.refresh();
+        } else if (section == Section.WATCHED) {
+            watchedView.refresh();
         }
         contentArea.getChildren().setAll(sectionViews.get(section));
         navigationButtons.forEach((candidate, button) -> {

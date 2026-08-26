@@ -8,9 +8,9 @@ class UiErrorMessagesTest {
 
     @Test
     void trackingFailuresUseStableNonTechnicalMessages() {
-        assertEquals("Could not save the Watchlist change. Check file access and try again.",
+        assertEquals("Could not save the tracking change. Check file access and try again.",
                 UiErrorMessages.trackingSaveFailure());
-        assertEquals("The Watchlist change failed unexpectedly. Try again.",
+        assertEquals("The tracking change failed unexpectedly. Try again.",
                 UiErrorMessages.unexpectedTrackingFailure());
     }
 }

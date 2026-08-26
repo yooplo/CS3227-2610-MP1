@@ -164,6 +164,25 @@ class MovieTrackerApplicationServiceTest {
                 application.getTrackingStatus(550).orElseThrow());
     }
 
+    @Test
+    void markWatchedStorageFailure_propagatesAndWatchlistRemainsUnchanged() throws Exception {
+        TrackedMovie watchlistMovie = tracked(FIGHT_CLUB, WatchStatus.WATCHLIST, null);
+        FakeStorage storage = new FakeStorage(watchlistMovie);
+        StorageException failure = new StorageException("simulated mark-watched failure");
+        storage.saveFailure = failure;
+        MovieTrackerApplicationService application = application(
+                new StubTransport(200, "{}"), storage);
+
+        StorageException actual = assertThrows(
+                StorageException.class, () -> application.markWatched(FIGHT_CLUB));
+
+        assertSame(failure, actual);
+        assertEquals(List.of(watchlistMovie), application.getWatchlist());
+        assertTrue(application.getWatched().isEmpty());
+        assertEquals(WatchStatus.WATCHLIST,
+                application.getTrackingStatus(550).orElseThrow());
+    }
+
     private static MovieTrackerApplicationService application(
             HttpTransport transport, FakeStorage storage) throws Exception {
         TmdbClient tmdbClient = new TmdbClient(

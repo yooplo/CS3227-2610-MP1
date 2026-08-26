@@ -118,7 +118,7 @@ without coordinating the TMDB client and local tracking service directly.
 - [x] Add Back action.
 - [x] Add an untracked movie to Watchlist from its detail view.
 - [x] Show Watchlist/Watched state and handle save failures in the detail view.
-- [ ] Add contextual Watchlist/Watched actions.
+- [x] Add contextual Watchlist/Watched actions.
 
 **Covers:** FR-DETAIL-01, FR-DETAIL-04..05.
 

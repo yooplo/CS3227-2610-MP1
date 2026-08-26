@@ -87,7 +87,10 @@ class MovieTrackerServiceTest {
 
         assertTrue(service.markWatched(FIGHT_CLUB));
 
-        assertEquals(WatchStatus.WATCHED, service.getTrackedMovies().getFirst().getStatus());
+        TrackedMovie watchedMovie = tracked(FIGHT_CLUB, WatchStatus.WATCHED, null);
+        assertTrue(service.getWatchlist().isEmpty());
+        assertEquals(List.of(watchedMovie), service.getWatched());
+        assertEquals(List.of(watchedMovie), storage.lastSavedState());
         assertEquals(1, storage.saveCalls);
     }
 
@@ -98,7 +101,10 @@ class MovieTrackerServiceTest {
 
         assertTrue(service.markWatched(FIGHT_CLUB));
 
-        assertEquals(WatchStatus.WATCHED, service.getTrackedMovies().getFirst().getStatus());
+        TrackedMovie watchedMovie = tracked(FIGHT_CLUB, WatchStatus.WATCHED, null);
+        assertTrue(service.getWatchlist().isEmpty());
+        assertEquals(List.of(watchedMovie), service.getWatched());
+        assertEquals(List.of(watchedMovie), storage.lastSavedState());
         assertEquals(1, storage.saveCalls);
     }
 
@@ -204,6 +210,8 @@ class MovieTrackerServiceTest {
         assertThrows(StorageException.class, () -> service.markWatched(FIGHT_CLUB));
 
         assertEquals(List.of(existing), service.getTrackedMovies());
+        assertEquals(List.of(existing), service.getWatchlist());
+        assertTrue(service.getWatched().isEmpty());
         assertEquals(1, storage.saveCalls);
     }
 

@@ -9,10 +9,10 @@ final class UiErrorMessages {
     }
 
     static String trackingSaveFailure() {
-        return "Could not save the Watchlist change. Check file access and try again.";
+        return "Could not save the tracking change. Check file access and try again.";
     }
 
     static String unexpectedTrackingFailure() {
-        return "The Watchlist change failed unexpectedly. Try again.";
+        return "The tracking change failed unexpectedly. Try again.";
     }
 }

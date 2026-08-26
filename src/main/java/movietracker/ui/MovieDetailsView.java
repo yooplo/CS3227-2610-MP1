@@ -3,6 +3,7 @@ package movietracker.ui;
 import java.time.LocalDate;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 
 import javafx.concurrent.Task;
@@ -192,18 +193,29 @@ final class MovieDetailsView extends BorderPane {
         heading.getStyleClass().add("details-subheading");
         actions.getChildren().add(heading);
 
-        applicationService.getTrackingStatus(movie.getTmdbId()).ifPresentOrElse(status -> {
+        Optional<WatchStatus> trackingStatus =
+                applicationService.getTrackingStatus(movie.getTmdbId());
+        if (trackingStatus.isPresent()) {
+            WatchStatus status = trackingStatus.orElseThrow();
             Label state = new Label(status == WatchStatus.WATCHLIST
                     ? "In Watchlist"
                     : "Already Watched");
             state.getStyleClass().add("tracking-state");
             actions.getChildren().add(state);
-        }, () -> {
+
+            if (status == WatchStatus.WATCHLIST) {
+                actions.getChildren().add(createMarkWatchedButton(actions, movie));
+            }
+        } else {
             Button addButton = new Button("Add to Watchlist");
             addButton.getStyleClass().add("primary-action");
             addButton.setOnAction(event -> addToWatchlist(actions, movie));
-            actions.getChildren().add(addButton);
-        });
+
+            HBox availableActions = new HBox(
+                    10, addButton, createMarkWatchedButton(actions, movie));
+            availableActions.setAlignment(Pos.CENTER_LEFT);
+            actions.getChildren().add(availableActions);
+        }
 
         if (feedback != null) {
             Label message = new Label(feedback);
@@ -216,46 +228,74 @@ final class MovieDetailsView extends BorderPane {
     }
 
     private void addToWatchlist(VBox actions, Movie movie) {
+        runTrackingMutation(
+                actions,
+                movie,
+                "Adding to Watchlist…",
+                "Added to Watchlist.",
+                () -> applicationService.addToWatchlist(movie));
+    }
+
+    private Button createMarkWatchedButton(VBox actions, Movie movie) {
+        Button markWatchedButton = new Button("Mark as Watched");
+        markWatchedButton.setOnAction(event -> markAsWatched(actions, movie));
+        return markWatchedButton;
+    }
+
+    private void markAsWatched(VBox actions, Movie movie) {
+        runTrackingMutation(
+                actions,
+                movie,
+                "Marking as Watched…",
+                "Marked as Watched.",
+                () -> applicationService.markWatched(movie));
+    }
+
+    private void runTrackingMutation(VBox actions,
+                                     Movie movie,
+                                     String workingMessage,
+                                     String successMessage,
+                                     TrackingMutation mutation) {
         if (activeTrackingMutation != null && !activeTrackingMutation.isDone()) {
             return;
         }
 
         ProgressIndicator progress = new ProgressIndicator();
         progress.setMaxSize(24, 24);
-        Label message = new Label("Adding to Watchlist…");
-        HBox addingState = new HBox(10, progress, message);
-        addingState.setAlignment(Pos.CENTER_LEFT);
+        Label message = new Label(workingMessage);
+        HBox workingState = new HBox(10, progress, message);
+        workingState.setAlignment(Pos.CENTER_LEFT);
 
         Label heading = new Label("Tracking");
         heading.getStyleClass().add("details-subheading");
-        actions.getChildren().setAll(heading, addingState);
+        actions.getChildren().setAll(heading, workingState);
 
-        Task<Boolean> addTask = new Task<>() {
+        Task<Boolean> mutationTask = new Task<>() {
             @Override
             protected Boolean call() throws StorageException {
-                return applicationService.addToWatchlist(movie);
+                return mutation.apply();
             }
         };
-        activeTrackingMutation = addTask;
+        activeTrackingMutation = mutationTask;
 
-        addTask.setOnSucceeded(event -> {
-            String feedback = addTask.getValue()
-                    ? "Added to Watchlist."
+        mutationTask.setOnSucceeded(event -> {
+            String feedback = mutationTask.getValue()
+                    ? successMessage
                     : null;
             refreshTrackingActions(actions, movie, feedback, false);
-            finishTrackingMutation(addTask);
+            finishTrackingMutation(mutationTask);
         });
-        addTask.setOnFailed(event -> {
-            Throwable failure = addTask.getException();
+        mutationTask.setOnFailed(event -> {
+            Throwable failure = mutationTask.getException();
             String error = failure instanceof StorageException
                     ? UiErrorMessages.trackingSaveFailure()
                     : UiErrorMessages.unexpectedTrackingFailure();
             refreshTrackingActions(actions, movie, error, true);
-            finishTrackingMutation(addTask);
+            finishTrackingMutation(mutationTask);
         });
-        addTask.setOnCancelled(event -> finishTrackingMutation(addTask));
+        mutationTask.setOnCancelled(event -> finishTrackingMutation(mutationTask));
 
-        executor.execute(addTask);
+        executor.execute(mutationTask);
     }
 
     private static Label createMetadata(String label, String value) {
@@ -275,5 +315,10 @@ final class MovieDetailsView extends BorderPane {
         if (activeTrackingMutation == completedMutation) {
             activeTrackingMutation = null;
         }
+    }
+
+    @FunctionalInterface
+    private interface TrackingMutation {
+        boolean apply() throws StorageException;
     }
 }

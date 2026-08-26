@@ -66,11 +66,18 @@ public final class MovieTrackerService {
      * Returns the current tracking status for a TMDB movie ID.
      */
     public Optional<WatchStatus> getTrackingStatus(int tmdbId) {
+        return getTrackedMovie(tmdbId).map(TrackedMovie::getStatus);
+    }
+
+    /**
+     * Returns the tracked snapshot for a TMDB movie ID, if present.
+     */
+    public Optional<TrackedMovie> getTrackedMovie(int tmdbId) {
         validateTmdbId(tmdbId);
         int index = findIndex(tmdbId);
         return index < 0
                 ? Optional.empty()
-                : Optional.of(trackedMovies.get(index).getStatus());
+                : Optional.of(trackedMovies.get(index));
     }
 
     /**

@@ -202,6 +202,11 @@
     -fx-font-weight: bold;
 }
 
+.personal-rating {
+    -fx-text-fill: #6d4aa2;
+    -fx-font-weight: bold;
+}
+
 .remove-action {
     -fx-background-color: transparent;
     -fx-border-color: #b84a4a;

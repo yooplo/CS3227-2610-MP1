@@ -4,12 +4,14 @@ import java.time.LocalDate;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.concurrent.Executor;
 
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
@@ -22,6 +24,7 @@ import movietracker.api.TmdbErrorCategory;
 import movietracker.api.TmdbException;
 import movietracker.model.Movie;
 import movietracker.model.MovieDetails;
+import movietracker.model.TrackedMovie;
 import movietracker.model.WatchStatus;
 import movietracker.service.MovieTrackerApplicationService;
 import movietracker.storage.StorageException;
@@ -205,6 +208,8 @@ final class MovieDetailsView extends BorderPane {
 
             if (status == WatchStatus.WATCHLIST) {
                 actions.getChildren().add(createMarkWatchedButton(actions, movie));
+            } else {
+                actions.getChildren().add(createRatingEditor(actions, movie));
             }
         } else {
             Button addButton = new Button("Add to Watchlist");
@@ -249,6 +254,76 @@ final class MovieDetailsView extends BorderPane {
                 "Marking as Watched…",
                 "Marked as Watched.",
                 () -> applicationService.markWatched(movie));
+    }
+
+    private VBox createRatingEditor(VBox actions, Movie movie) {
+        TrackedMovie trackedMovie = applicationService.getTrackedMovie(movie.getTmdbId())
+                .orElseThrow();
+        OptionalInt currentRating = trackedMovie.getPersonalRating();
+
+        Label currentRatingLabel = new Label(currentRating.isPresent()
+                ? "Your rating: " + currentRating.getAsInt() + " / "
+                        + TrackedMovie.MAXIMUM_PERSONAL_RATING
+                : "Your rating: Not rated");
+        currentRatingLabel.getStyleClass().add("personal-rating");
+
+        ComboBox<Integer> ratingSelector = new ComboBox<>();
+        for (int rating = TrackedMovie.MINIMUM_PERSONAL_RATING;
+                rating <= TrackedMovie.MAXIMUM_PERSONAL_RATING; rating++) {
+            ratingSelector.getItems().add(rating);
+        }
+        ratingSelector.setPromptText("Choose "
+                + TrackedMovie.MINIMUM_PERSONAL_RATING + "–"
+                + TrackedMovie.MAXIMUM_PERSONAL_RATING);
+        if (currentRating.isPresent()) {
+            ratingSelector.setValue(currentRating.getAsInt());
+        }
+
+        Button saveButton = new Button(currentRating.isPresent()
+                ? "Update rating"
+                : "Save rating");
+        saveButton.getStyleClass().add("primary-action");
+        saveButton.setDisable(ratingSelector.getValue() == null
+                || isCurrentRating(currentRating, ratingSelector.getValue()));
+        ratingSelector.valueProperty().addListener((observable, oldValue, newValue) ->
+                saveButton.setDisable(newValue == null
+                        || isCurrentRating(currentRating, newValue)));
+        saveButton.setOnAction(event -> setPersonalRating(
+                actions, movie, ratingSelector.getValue()));
+
+        HBox controls = new HBox(10, ratingSelector, saveButton);
+        controls.setAlignment(Pos.CENTER_LEFT);
+        if (currentRating.isPresent()) {
+            Button clearButton = new Button("Clear rating");
+            clearButton.setOnAction(event -> clearPersonalRating(actions, movie));
+            controls.getChildren().add(clearButton);
+        }
+
+        return new VBox(8, currentRatingLabel, controls);
+    }
+
+    private void setPersonalRating(VBox actions, Movie movie, Integer rating) {
+        runTrackingMutation(
+                actions,
+                movie,
+                "Saving personal rating…",
+                "Personal rating saved.",
+                () -> applicationService.setPersonalRating(movie.getTmdbId(), rating));
+    }
+
+    private void clearPersonalRating(VBox actions, Movie movie) {
+        runTrackingMutation(
+                actions,
+                movie,
+                "Clearing personal rating…",
+                "Personal rating cleared.",
+                () -> applicationService.setPersonalRating(movie.getTmdbId(), null));
+    }
+
+    private static boolean isCurrentRating(OptionalInt currentRating, Integer proposedRating) {
+        return proposedRating != null
+                && currentRating.isPresent()
+                && currentRating.getAsInt() == proposedRating;
     }
 
     private void runTrackingMutation(VBox actions,

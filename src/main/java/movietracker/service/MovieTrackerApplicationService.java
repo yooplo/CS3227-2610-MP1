@@ -64,6 +64,10 @@ public final class MovieTrackerApplicationService {
         return movieTrackerService.getTrackingStatus(tmdbId);
     }
 
+    public Optional<TrackedMovie> getTrackedMovie(int tmdbId) {
+        return movieTrackerService.getTrackedMovie(tmdbId);
+    }
+
     public boolean addToWatchlist(Movie movie) throws StorageException {
         return movieTrackerService.addToWatchlist(movie);
     }

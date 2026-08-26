@@ -8,8 +8,8 @@ import java.util.OptionalInt;
  */
 public final class TrackedMovie {
 
-    private static final int MINIMUM_RATING = 1;
-    private static final int MAXIMUM_RATING = 10;
+    public static final int MINIMUM_PERSONAL_RATING = 1;
+    public static final int MAXIMUM_PERSONAL_RATING = 10;
 
     private final Movie movie;
     private final WatchStatus status;
@@ -71,7 +71,8 @@ public final class TrackedMovie {
         if (status != WatchStatus.WATCHED) {
             throw new IllegalArgumentException("Only watched movies may have a personal rating");
         }
-        if (personalRating < MINIMUM_RATING || personalRating > MAXIMUM_RATING) {
+        if (personalRating < MINIMUM_PERSONAL_RATING
+                || personalRating > MAXIMUM_PERSONAL_RATING) {
             throw new IllegalArgumentException("Personal rating must be from 1 to 10");
         }
     }

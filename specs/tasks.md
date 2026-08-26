@@ -142,10 +142,10 @@ without coordinating the TMDB client and local tracking service directly.
 
 ## Phase 11 — Personal rating (optional MVP+)
 
-- [ ] Add integer 1–10 rating UI.
-- [ ] Validate range.
-- [ ] Persist/update/clear rating.
-- [ ] Add tests.
+- [x] Add integer 1–10 rating UI.
+- [x] Validate range.
+- [x] Persist/update/clear rating.
+- [x] Add tests.
 
 **Covers:** FR-RATING.
 

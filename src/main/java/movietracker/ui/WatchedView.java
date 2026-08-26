@@ -113,6 +113,12 @@ final class WatchedView extends VBox {
             state.getStyleClass().add("collection-state");
 
             VBox text = new VBox(5, title, release, state);
+            trackedMovie.getPersonalRating().ifPresent(rating -> {
+                Label personalRating = new Label("Personal rating: " + rating + " / "
+                        + TrackedMovie.MAXIMUM_PERSONAL_RATING);
+                personalRating.getStyleClass().add("personal-rating");
+                text.getChildren().add(personalRating);
+            });
             HBox.setHgrow(text, Priority.ALWAYS);
             HBox row = new HBox(
                     14,

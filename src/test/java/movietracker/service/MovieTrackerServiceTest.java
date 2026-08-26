@@ -151,6 +151,8 @@ class MovieTrackerServiceTest {
         assertEquals(WatchStatus.WATCHED,
                 service.getTrackingStatus(680).orElseThrow());
         assertTrue(service.getTrackingStatus(999).isEmpty());
+        assertEquals(watched, service.getTrackedMovie(680).orElseThrow());
+        assertTrue(service.getTrackedMovie(999).isEmpty());
     }
 
     @Test
@@ -161,10 +163,15 @@ class MovieTrackerServiceTest {
 
         assertTrue(service.setPersonalRating(550, 7));
         assertEquals(7, service.getWatched().getFirst().getPersonalRating().orElseThrow());
+        assertEquals(7, storage.lastSavedState().getFirst()
+                .getPersonalRating().orElseThrow());
         assertTrue(service.setPersonalRating(550, 9));
         assertEquals(9, service.getWatched().getFirst().getPersonalRating().orElseThrow());
+        assertEquals(9, storage.lastSavedState().getFirst()
+                .getPersonalRating().orElseThrow());
         assertTrue(service.setPersonalRating(550, null));
         assertTrue(service.getWatched().getFirst().getPersonalRating().isEmpty());
+        assertTrue(storage.lastSavedState().getFirst().getPersonalRating().isEmpty());
         assertEquals(3, storage.saveCalls);
     }
 
@@ -197,7 +204,23 @@ class MovieTrackerServiceTest {
         MovieTrackerService service = new MovieTrackerService(storage);
 
         assertThrows(IllegalArgumentException.class, () -> service.setPersonalRating(550, 0));
+        assertThrows(IllegalArgumentException.class, () -> service.setPersonalRating(550, 11));
         assertEquals(0, storage.saveCalls);
+    }
+
+    @Test
+    void rating_saveFailure_keepsPreviousRating() throws StorageException {
+        TrackedMovie existing = tracked(FIGHT_CLUB, WatchStatus.WATCHED, 6);
+        FakeStorage storage = new FakeStorage(List.of(existing));
+        storage.failSaves = true;
+        MovieTrackerService service = new MovieTrackerService(storage);
+
+        assertThrows(StorageException.class, () -> service.setPersonalRating(550, 9));
+
+        assertEquals(6, service.getWatched().getFirst()
+                .getPersonalRating().orElseThrow());
+        assertEquals(List.of(existing), service.getTrackedMovies());
+        assertEquals(1, storage.saveCalls);
     }
 
     @Test

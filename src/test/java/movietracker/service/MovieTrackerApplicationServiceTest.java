@@ -84,6 +84,8 @@ class MovieTrackerApplicationServiceTest {
         assertEquals(WatchStatus.WATCHED,
                 application.getTrackingStatus(680).orElseThrow());
         assertTrue(application.getTrackingStatus(999).isEmpty());
+        assertEquals(watched, application.getTrackedMovie(680).orElseThrow());
+        assertTrue(application.getTrackedMovie(999).isEmpty());
     }
 
     @Test
@@ -184,6 +186,25 @@ class MovieTrackerApplicationServiceTest {
         assertTrue(application.getWatched().isEmpty());
         assertEquals(WatchStatus.WATCHLIST,
                 application.getTrackingStatus(550).orElseThrow());
+    }
+
+    @Test
+    void personalRatingMutations_delegateAndPersistSetUpdateAndClear() throws Exception {
+        FakeStorage storage = new FakeStorage(
+                tracked(FIGHT_CLUB, WatchStatus.WATCHED, null));
+        MovieTrackerApplicationService application = application(
+                new StubTransport(200, "{}"), storage);
+
+        assertTrue(application.setPersonalRating(550, 6));
+        assertEquals(6, application.getTrackedMovie(550).orElseThrow()
+                .getPersonalRating().orElseThrow());
+        assertTrue(application.setPersonalRating(550, 9));
+        assertEquals(9, application.getWatched().getFirst()
+                .getPersonalRating().orElseThrow());
+        assertTrue(application.setPersonalRating(550, null));
+
+        assertTrue(application.getWatched().getFirst().getPersonalRating().isEmpty());
+        assertEquals(3, storage.savedStates.size());
     }
 
     private static MovieTrackerApplicationService application(

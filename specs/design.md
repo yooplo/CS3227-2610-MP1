@@ -227,6 +227,14 @@ The service persists before publishing its new in-memory state; therefore the UI
 shows Watchlist success only after the task succeeds and retains the prior state
 when `StorageException` is reported.
 
+`WatchlistView` renders the application's locally stored Watchlist snapshot and
+refreshes whenever its navigation section is shown. Its rows reuse `PosterView`,
+open the shared detail view, and remove movies through
+`MovieTrackerApplicationService` on the application executor. `MainWindow`
+records whether Details was opened from Search or Watchlist so Back restores the
+originating view; returning to Watchlist refreshes it from current service state.
+Removal leaves the displayed item in place until persistence succeeds.
+
 ### Search view
 
 ```text

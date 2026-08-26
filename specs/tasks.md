@@ -124,10 +124,10 @@ without coordinating the TMDB client and local tracking service directly.
 
 ## Phase 9 — Watchlist UI
 
-- [ ] Render persisted Watchlist.
-- [ ] Clicking a Watchlist item opens detail view.
-- [ ] Add remove action.
-- [ ] Refresh view immediately after mutation.
+- [x] Render persisted Watchlist.
+- [x] Clicking a Watchlist item opens detail view.
+- [x] Add remove action.
+- [x] Refresh view immediately after mutation.
 
 **Covers:** FR-WATCHLIST, FR-DETAIL-02.
 

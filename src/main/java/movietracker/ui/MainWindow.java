@@ -28,9 +28,11 @@ public final class MainWindow extends BorderPane {
     private final Map<Section, Button> navigationButtons = new EnumMap<>(Section.class);
     private final Map<Section, Node> sectionViews = new EnumMap<>(Section.class);
     private final SearchView searchView;
+    private final WatchlistView watchlistView;
     private final MovieTrackerApplicationService applicationService;
     private final Executor applicationExecutor;
     private MovieDetailsView detailsView;
+    private Section detailsOrigin;
 
     /**
      * Creates the application shell with placeholder section views.
@@ -43,10 +45,13 @@ public final class MainWindow extends BorderPane {
         getStyleClass().add("main-window");
 
         searchView = new SearchView(
-                applicationService, applicationExecutor, this::showMovieDetails);
+                applicationService, applicationExecutor,
+                movie -> showMovieDetails(movie, Section.SEARCH));
+        watchlistView = new WatchlistView(
+                applicationService, applicationExecutor,
+                movie -> showMovieDetails(movie, Section.WATCHLIST));
         sectionViews.put(Section.SEARCH, searchView);
-        sectionViews.put(Section.WATCHLIST, createCollectionView(
-                "Watchlist", "Movies saved to your Watchlist will appear here."));
+        sectionViews.put(Section.WATCHLIST, watchlistView);
         sectionViews.put(Section.WATCHED, createCollectionView(
                 "Watched", "Movies marked as Watched will appear here."));
 
@@ -60,6 +65,7 @@ public final class MainWindow extends BorderPane {
      */
     public void close() {
         searchView.cancelActiveSearch();
+        watchlistView.cancelActiveRemoval();
         closeDetailsView();
     }
 
@@ -119,6 +125,9 @@ public final class MainWindow extends BorderPane {
 
     private void showSection(Section section) {
         closeDetailsView();
+        if (section == Section.WATCHLIST) {
+            watchlistView.refresh();
+        }
         contentArea.getChildren().setAll(sectionViews.get(section));
         navigationButtons.forEach((candidate, button) -> {
             button.getStyleClass().remove(ACTIVE_NAVIGATION_STYLE);
@@ -128,16 +137,18 @@ public final class MainWindow extends BorderPane {
         });
     }
 
-    private void showMovieDetails(Movie movie) {
+    private void showMovieDetails(Movie movie, Section origin) {
         closeDetailsView();
+        detailsOrigin = origin;
         detailsView = new MovieDetailsView(
-                movie, applicationService, applicationExecutor, this::returnToSearch);
+                movie, applicationService, applicationExecutor, origin.label,
+                this::returnFromDetails);
         contentArea.getChildren().setAll(detailsView);
     }
 
-    private void returnToSearch() {
-        closeDetailsView();
-        showSection(Section.SEARCH);
+    private void returnFromDetails() {
+        Section returnSection = detailsOrigin == null ? Section.SEARCH : detailsOrigin;
+        showSection(returnSection);
     }
 
     private void closeDetailsView() {
@@ -145,6 +156,7 @@ public final class MainWindow extends BorderPane {
             detailsView.cancelActiveLoad();
             detailsView = null;
         }
+        detailsOrigin = null;
     }
 
     private enum Section {

@@ -1,6 +1,5 @@
 package movietracker.ui;
 
-import java.net.URI;
 import java.time.LocalDate;
 import java.util.Locale;
 import java.util.Objects;
@@ -9,13 +8,10 @@ import java.util.concurrent.Executor;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -23,7 +19,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import movietracker.api.TmdbErrorCategory;
 import movietracker.api.TmdbException;
-import movietracker.api.TmdbImageUrls;
 import movietracker.model.Movie;
 import movietracker.model.MovieDetails;
 import movietracker.model.WatchStatus;
@@ -50,16 +45,18 @@ final class MovieDetailsView extends BorderPane {
     MovieDetailsView(Movie selectedMovie,
                      MovieTrackerApplicationService applicationService,
                      Executor executor,
+                     String backDestination,
                      Runnable backAction) {
         this.selectedMovie = Objects.requireNonNull(selectedMovie, "selectedMovie");
         this.applicationService = Objects.requireNonNull(applicationService, "applicationService");
         this.executor = Objects.requireNonNull(executor, "executor");
+        Objects.requireNonNull(backDestination, "backDestination");
         this.backAction = Objects.requireNonNull(backAction, "backAction");
 
         getStyleClass().add("details-view");
         setPadding(new Insets(20, 28, 28, 28));
 
-        Button backButton = new Button("Back to Search");
+        Button backButton = new Button("Back to " + backDestination);
         backButton.getStyleClass().add("back-button");
         backButton.setOnAction(event -> backAction.run());
         setTop(backButton);
@@ -137,7 +134,8 @@ final class MovieDetailsView extends BorderPane {
         VBox text = createDetailsText(details);
         HBox.setHgrow(text, Priority.ALWAYS);
 
-        HBox summary = new HBox(24, createPoster(details.getMovie()), text);
+        HBox summary = new HBox(24, new PosterView(
+                details.getMovie().getPosterPath(), POSTER_WIDTH, POSTER_HEIGHT), text);
         summary.setAlignment(Pos.TOP_LEFT);
 
         VBox detailsContent = new VBox(20, summary);
@@ -265,50 +263,6 @@ final class MovieDetailsView extends BorderPane {
         metadata.getStyleClass().add("details-metadata");
         metadata.setWrapText(true);
         return metadata;
-    }
-
-    private static Node createPoster(Movie movie) {
-        Label placeholder = new Label("No poster available");
-        placeholder.getStyleClass().add("poster-placeholder");
-        placeholder.setAlignment(Pos.CENTER);
-        placeholder.setWrapText(true);
-        placeholder.setPrefSize(POSTER_WIDTH, POSTER_HEIGHT);
-        placeholder.setMinSize(POSTER_WIDTH, POSTER_HEIGHT);
-
-        StackPane posterArea = new StackPane(placeholder);
-        posterArea.getStyleClass().add("poster-area");
-        posterArea.setPrefSize(POSTER_WIDTH, POSTER_HEIGHT);
-        posterArea.setMaxSize(POSTER_WIDTH, POSTER_HEIGHT);
-
-        movie.getPosterPath()
-                .flatMap(TmdbImageUrls::posterUri)
-                .ifPresent(uri -> loadPoster(uri, posterArea, placeholder));
-        return posterArea;
-    }
-
-    private static void loadPoster(URI uri, StackPane posterArea, Label placeholder) {
-        placeholder.setText("Loading poster…");
-        Image image = new Image(uri.toString(), POSTER_WIDTH, POSTER_HEIGHT, true, true, true);
-        ImageView imageView = new ImageView(image);
-        imageView.setFitWidth(POSTER_WIDTH);
-        imageView.setFitHeight(POSTER_HEIGHT);
-        imageView.setPreserveRatio(true);
-        imageView.setVisible(false);
-        posterArea.getChildren().add(imageView);
-
-        image.progressProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.doubleValue() >= 1.0 && !image.isError()) {
-                imageView.setVisible(true);
-                placeholder.setVisible(false);
-            }
-        });
-        image.errorProperty().addListener((observable, oldValue, hasError) -> {
-            if (hasError) {
-                imageView.setVisible(false);
-                placeholder.setVisible(true);
-                placeholder.setText("Poster unavailable");
-            }
-        });
     }
 
     private void finishLoad(Task<MovieDetails> completedLoad) {

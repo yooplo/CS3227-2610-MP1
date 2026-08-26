@@ -188,3 +188,28 @@
 .tracking-error {
     -fx-text-fill: #a12b2b;
 }
+
+.watchlist-movies {
+    -fx-cursor: hand;
+}
+
+.watchlist-row {
+    -fx-min-height: 116px;
+}
+
+.collection-state {
+    -fx-text-fill: #326bb3;
+    -fx-font-weight: bold;
+}
+
+.remove-action {
+    -fx-background-color: transparent;
+    -fx-border-color: #b84a4a;
+    -fx-border-radius: 5px;
+    -fx-text-fill: #9a3030;
+    -fx-cursor: hand;
+}
+
+.remove-action:hover {
+    -fx-background-color: #fbeaea;
+}

@@ -146,6 +146,24 @@ class MovieTrackerApplicationServiceTest {
         assertTrue(application.getTrackingStatus(550).isEmpty());
     }
 
+    @Test
+    void removeStorageFailure_propagatesAndWatchlistRemainsUnchanged() throws Exception {
+        TrackedMovie watchlistMovie = tracked(FIGHT_CLUB, WatchStatus.WATCHLIST, null);
+        FakeStorage storage = new FakeStorage(watchlistMovie);
+        StorageException failure = new StorageException("simulated remove failure");
+        storage.saveFailure = failure;
+        MovieTrackerApplicationService application = application(
+                new StubTransport(200, "{}"), storage);
+
+        StorageException actual = assertThrows(
+                StorageException.class, () -> application.removeTrackedMovie(550));
+
+        assertSame(failure, actual);
+        assertEquals(List.of(watchlistMovie), application.getWatchlist());
+        assertEquals(WatchStatus.WATCHLIST,
+                application.getTrackingStatus(550).orElseThrow());
+    }
+
     private static MovieTrackerApplicationService application(
             HttpTransport transport, FakeStorage storage) throws Exception {
         TmdbClient tmdbClient = new TmdbClient(

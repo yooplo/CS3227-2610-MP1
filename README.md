@@ -53,9 +53,13 @@ Windows:
 .\gradlew.bat run
 ```
 
-Set `TMDB_API_TOKEN` in the runtime environment to enable TMDB search. The
-application still opens without it and shows a configuration message when a
-search is attempted. Never place the token in a tracked file.
+Set `TMDB_API_TOKEN` in the runtime environment to enable TMDB Search and Movie
+Details. The application still opens without it and shows a configuration
+message when either remote operation is attempted. Never place the token in a
+tracked file.
+
+End-user and implementation documentation is available in the
+[User Guide](docs/UserGuide.md) and [Developer Guide](docs/DeveloperGuide.md).
 
 ## Test
 
@@ -97,10 +101,10 @@ Run it from the directory where local Movie Tracker data should be stored:
 java -jar MovieTracker.jar
 ```
 
-The JAR includes Jackson and the JavaFX runtime libraries/native binaries for
-the selected target. JavaFX natives are platform- and architecture-specific, so
-the JAR is not universal. Build on the target system, or explicitly select a
-supported OpenJFX target such as:
+The current checked-in JAR is built for Windows x86-64. It includes Jackson and
+the JavaFX runtime libraries/native binaries for that target. JavaFX natives are
+platform- and architecture-specific, so the JAR is not universal. Build on the
+target system, or explicitly select a supported OpenJFX target such as:
 
 ```bash
 ./gradlew releaseJar -PjavafxPlatform=linux

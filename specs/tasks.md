@@ -176,8 +176,8 @@ without coordinating the TMDB client and local tracking service directly.
 
 ## Phase 14 — Documentation and final checks
 
-- [ ] Update root `README.md` with setup/run instructions.
-- [ ] Update `docs/README.md` as the user guide if required by the MP1 workflow.
+- [x] Update root `README.md` with setup/run instructions.
+- [x] Add submission-ready `docs/UserGuide.md` and `docs/DeveloperGuide.md`.
 - [ ] Include TMDB attribution required by current TMDB terms.
 - [ ] Add screenshots if useful.
 - [ ] Keep a short implementation summary/changelog for MP1.

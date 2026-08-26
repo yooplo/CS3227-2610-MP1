@@ -6,17 +6,17 @@ Use requirement IDs from `requirements.md` in commit/PR notes where useful.
 
 ## Phase 0 — Repository and build skeleton
 
-- [ ] Ensure the grading branch is named `master`.
-- [ ] Set Java toolchain/default target to Java SE 25.
-- [ ] Keep `src/main/java` as the Java source root.
-- [ ] Set up Gradle Wrapper.
-- [ ] Add JavaFX dependencies/plugin.
-- [ ] Add JUnit 5.
+- [x] Ensure the grading branch is named `master`.
+- [x] Set Java toolchain/default target to Java SE 25.
+- [x] Keep `src/main/java` as the Java source root.
+- [x] Set up Gradle Wrapper.
+- [x] Add JavaFX dependencies/plugin.
+- [x] Add JUnit 5.
 - [ ] Add chosen JSON library.
-- [ ] Add `.gitignore` entries for IDE/build/temp/secret files.
-- [ ] Add `release/` directory policy.
-- [ ] Verify a minimal JavaFX window starts from Gradle.
-- [ ] Add separate `Launcher` class.
+- [x] Add `.gitignore` entries for IDE/build/temp/secret files.
+- [x] Add `release/` directory policy.
+- [x] Verify a minimal JavaFX window starts from Gradle.
+- [x] Add separate `Launcher` class.
 
 **Done when:** `gradlew run` launches an empty/minimal JavaFX Movie Tracker window on the development machine.
 

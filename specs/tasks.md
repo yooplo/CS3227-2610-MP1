@@ -178,7 +178,7 @@ without coordinating the TMDB client and local tracking service directly.
 
 - [x] Update root `README.md` with setup/run instructions.
 - [x] Add submission-ready `docs/UserGuide.md` and `docs/DeveloperGuide.md`.
-- [ ] Include TMDB attribution required by current TMDB terms.
+- [x] Include TMDB attribution required by current TMDB terms.
 - [ ] Add screenshots if useful.
 - [ ] Keep a short implementation summary/changelog for MP1.
 - [ ] Run `gradlew clean test`.

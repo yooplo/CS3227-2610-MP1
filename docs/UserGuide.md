@@ -30,7 +30,7 @@ Place `MovieTracker.jar` in the directory from which you want to run it, open a 
 java -jar MovieTracker.jar
 ```
 
-The main window opens with Search, Watchlist, and Watched navigation on the left.
+The main window opens with Search, Watchlist, Watched, and About navigation on the left.
 
 ## Using Movie Tracker
 
@@ -69,6 +69,10 @@ A movie cannot be in Watchlist and Watched at the same time. Removing a watched 
 ### Personal ratings
 
 Rating controls appear only for watched movies. In Details, choose an integer from 1 to 10 and save it. You can update an existing rating or select **Clear rating**. Saved ratings appear in the Watched list and are separate from TMDB's public rating.
+
+### About and credits
+
+Select **About** to view application information and TMDB attribution. This section uses no network, storage, or tracking state and remains available without `TMDB_API_TOKEN`. Movie Tracker is the CS3227 MP1 application; movie metadata and images displayed by it are supplied by TMDB. The About section includes TMDB's approved logo and required non-endorsement notice.
 
 ## Local data
 

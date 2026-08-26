@@ -52,6 +52,7 @@ The UI is programmatic JavaFX styled by `src/main/resources/movietracker/css/app
 - `SearchView` validates input, starts searches, renders title/year results, and retains its current query/results when another view is temporarily shown.
 - `MovieDetailsView` asynchronously loads details and delegates tracking and rating actions.
 - `WatchlistView` and `WatchedView` refresh from local service snapshots whenever their section is shown. Their rows open Details and perform removal.
+- `AboutView` presents static application credits and TMDB attribution. It has no API, storage, service, or token dependency and renders the bundled approved TMDB SVG locally.
 - `PosterView` builds on `TmdbImageUrls` and JavaFX background image loading, with a non-fatal placeholder.
 - `TmdbErrorMessages` and `UiErrorMessages` centralize safe user-facing text.
 
@@ -175,7 +176,7 @@ The packaged application continues to read `TMDB_API_TOKEN` from its process env
 
 ## Acknowledgements
 
-- Movie metadata and images are provided through [The Movie Database (TMDB) API](https://developer.themoviedb.org/docs/getting-started). This product uses the TMDB API but is not endorsed or certified by TMDB. The current attribution requirements are documented in the [TMDB API FAQ](https://developer.themoviedb.org/docs/faq).
+- Movie metadata and images are provided through [The Movie Database (TMDB) API](https://developer.themoviedb.org/docs/getting-started). The in-application About section includes TMDB's approved primary logo and the exact notice: "This product uses the TMDB API but is not endorsed or certified by TMDB." The current attribution requirements are documented in the [TMDB API FAQ](https://developer.themoviedb.org/docs/faq) and [TMDB Logos & Attribution](https://www.themoviedb.org/about/logos-attribution).
 - The GUI uses [OpenJFX/JavaFX](https://openjfx.io/) and its platform-specific runtime components.
 - JSON serialization and mapping use [Jackson Databind](https://github.com/FasterXML/jackson-databind).
 - Builds, tests, dependency resolution, and release assembly use [Gradle](https://gradle.org/).

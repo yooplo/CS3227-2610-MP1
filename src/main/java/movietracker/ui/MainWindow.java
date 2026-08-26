@@ -33,9 +33,7 @@ public final class MainWindow extends BorderPane {
     private MovieDetailsView detailsView;
     private Section detailsOrigin;
 
-    /**
-     * Creates the application shell with placeholder section views.
-     */
+    /** Creates the application shell and section views. */
     public MainWindow(MovieTrackerApplicationService applicationService,
                       Executor applicationExecutor) {
         this.applicationService = Objects.requireNonNull(applicationService, "applicationService");
@@ -55,6 +53,7 @@ public final class MainWindow extends BorderPane {
         sectionViews.put(Section.SEARCH, searchView);
         sectionViews.put(Section.WATCHLIST, watchlistView);
         sectionViews.put(Section.WATCHED, watchedView);
+        sectionViews.put(Section.ABOUT, new AboutView());
 
         setLeft(createNavigation());
         setCenter(contentArea);
@@ -133,7 +132,8 @@ public final class MainWindow extends BorderPane {
     private enum Section {
         SEARCH("Search"),
         WATCHLIST("Watchlist"),
-        WATCHED("Watched");
+        WATCHED("Watched"),
+        ABOUT("About");
 
         private final String label;
 

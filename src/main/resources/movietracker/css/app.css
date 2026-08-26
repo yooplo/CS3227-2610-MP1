@@ -388,3 +388,49 @@
     -fx-background-color: #fceeee;
     -fx-border-color: #b95656;
 }
+
+.about-view {
+    -fx-background-color: #f3f5f8;
+}
+
+.about-card {
+    -fx-max-width: 720px;
+    -fx-padding: 20px;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 9px;
+    -fx-border-color: #d7dee7;
+    -fx-border-radius: 9px;
+}
+
+.about-app-name {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #172235;
+}
+
+.about-module {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3478c7;
+}
+
+.about-copy,
+.attribution-notice {
+    -fx-text-fill: #46566a;
+    -fx-line-spacing: 2px;
+}
+
+.credits-heading {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #253348;
+}
+
+.tmdb-logo {
+    -fx-padding: 2px 0;
+}
+
+.attribution-notice {
+    -fx-font-size: 13px;
+    -fx-font-style: italic;
+}

@@ -1,0 +1,18 @@
+{
+  "version" : 1,
+  "movies" : [ {
+    "tmdbId" : 11011,
+    "title" : "Ri¢hie Ri¢h",
+    "releaseDate" : "1994-12-19",
+    "posterPath" : "/qgGh5d0IHAZRlHIdFS3XWVygumR.jpg",
+    "status" : "WATCHED",
+    "personalRating" : 3
+  }, {
+    "tmdbId" : 950387,
+    "title" : "A Minecraft Movie",
+    "releaseDate" : "2025-03-31",
+    "posterPath" : "/yFHHfHcUgGAxziP1C3lLt0q2T4s.jpg",
+    "status" : "WATCHED",
+    "personalRating" : null
+  } ]
+}

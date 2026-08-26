@@ -6,6 +6,8 @@ plugins {
 group = 'movietracker'
 version = '0.1.0-SNAPSHOT'
 
+def requestedJavafxPlatform = providers.gradleProperty('javafxPlatform')
+
 repositories {
     mavenCentral()
 }
@@ -19,6 +21,9 @@ java {
 javafx {
     version = '25.0.2'
     modules = ['javafx.controls']
+    if (requestedJavafxPlatform.isPresent()) {
+        platform = requestedJavafxPlatform.get()
+    }
 }
 
 dependencies {
@@ -36,4 +41,52 @@ application {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.register('cleanReleaseJars') {
+    group = 'distribution'
+    description = 'Removes prior MP1 release JARs while preserving release/.gitkeep.'
+    outputs.upToDateWhen { false }
+    doLast {
+        fileTree(layout.projectDirectory.dir('release')) {
+            include '*.jar'
+        }.files.each { releaseJarFile ->
+            delete releaseJarFile
+        }
+    }
+}
+
+tasks.register('releaseJar', Jar) {
+    group = 'distribution'
+    description = 'Builds the executable, platform-specific MP1 submission JAR.'
+    dependsOn tasks.named('cleanReleaseJars'), tasks.named('test')
+
+    archiveFileName = 'MovieTracker.jar'
+    destinationDirectory = layout.projectDirectory.dir('release')
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+
+    manifest {
+        attributes(
+                'Main-Class': 'movietracker.Launcher',
+                'Implementation-Title': 'Movie Tracker',
+                'Implementation-Version': project.version,
+                'Enable-Native-Access': 'ALL-UNNAMED',
+                'JavaFX-Target-Platform': requestedJavafxPlatform.orElse(
+                        "current-${System.getProperty('os.name')}-${System.getProperty('os.arch')}").get())
+    }
+
+    from sourceSets.main.output
+    from {
+        configurations.runtimeClasspath.collect { dependency ->
+            dependency.isDirectory() ? dependency : zipTree(dependency)
+        }
+    }
+
+    exclude 'module-info.class'
+    exclude 'META-INF/versions/**/module-info.class'
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
 }

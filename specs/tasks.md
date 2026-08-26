@@ -163,14 +163,14 @@ without coordinating the TMDB client and local tracking service directly.
 
 ## Phase 13 — Cross-platform release
 
-- [ ] Confirm Java/JavaFX packaging strategy supports Windows.
-- [ ] Smoke-test on Windows.
+- [x] Confirm Java/JavaFX packaging strategy supports Windows.
+- [x] Smoke-test on Windows.
 - [ ] Smoke-test on Linux.
 - [ ] Smoke-test on macOS.
-- [ ] Build the latest distributable JAR with required libraries.
-- [ ] Place the submission JAR in `release/`.
-- [ ] Verify the JAR starts from a clean folder/environment as required by the assignment.
-- [ ] Confirm branch is `master` before grading/submission.
+- [x] Build the latest distributable JAR with required libraries.
+- [x] Place the submission JAR in `release/`.
+- [x] Verify the JAR starts from a clean folder/environment as required by the assignment.
+- [x] Confirm branch is `master` before grading/submission.
 
 > JavaFX contains platform-specific native components. Do not assume a JAR produced and tested on only one OS is automatically cross-platform. Explicitly verify the final packaging approach and test on all three required operating systems.
 

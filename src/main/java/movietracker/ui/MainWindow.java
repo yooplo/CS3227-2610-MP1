@@ -50,7 +50,7 @@ public final class MainWindow extends BorderPane {
                 applicationService, applicationExecutor,
                 movie -> showMovieDetails(movie, Section.WATCHLIST));
         watchedView = new WatchedView(
-                applicationService,
+                applicationService, applicationExecutor,
                 movie -> showMovieDetails(movie, Section.WATCHED));
         sectionViews.put(Section.SEARCH, searchView);
         sectionViews.put(Section.WATCHLIST, watchlistView);
@@ -67,6 +67,7 @@ public final class MainWindow extends BorderPane {
     public void close() {
         searchView.cancelActiveSearch();
         watchlistView.cancelActiveRemoval();
+        watchedView.cancelActiveRemoval();
         closeDetailsView();
     }
 

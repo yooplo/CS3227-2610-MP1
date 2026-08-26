@@ -134,6 +134,37 @@ class MovieTrackerServiceTest {
     }
 
     @Test
+    void remove_watchedMovie_removesRatingAndPersistsUntrackedState()
+            throws StorageException {
+        FakeStorage storage = new FakeStorage(List.of(
+                tracked(FIGHT_CLUB, WatchStatus.WATCHED, 8)));
+        MovieTrackerService service = new MovieTrackerService(storage);
+
+        assertTrue(service.removeTrackedMovie(550));
+
+        assertTrue(service.getWatched().isEmpty());
+        assertTrue(service.getTrackedMovie(550).isEmpty());
+        assertFalse(service.isTracked(550));
+        assertTrue(storage.lastSavedState().isEmpty());
+        assertEquals(1, storage.saveCalls);
+    }
+
+    @Test
+    void remove_watchedSaveFailure_retainsMovieAndRating() throws StorageException {
+        TrackedMovie existing = tracked(FIGHT_CLUB, WatchStatus.WATCHED, 8);
+        FakeStorage storage = new FakeStorage(List.of(existing));
+        storage.failSaves = true;
+        MovieTrackerService service = new MovieTrackerService(storage);
+
+        assertThrows(StorageException.class, () -> service.removeTrackedMovie(550));
+
+        assertEquals(List.of(existing), service.getWatched());
+        assertEquals(8, service.getTrackedMovie(550).orElseThrow()
+                .getPersonalRating().orElseThrow());
+        assertEquals(1, storage.saveCalls);
+    }
+
+    @Test
     void statusFilters_returnOnlyMatchingMoviesInOrder() throws StorageException {
         TrackedMovie firstWatchlist = tracked(FIGHT_CLUB, WatchStatus.WATCHLIST, null);
         TrackedMovie watched = tracked(PULP_FICTION, WatchStatus.WATCHED, 7);

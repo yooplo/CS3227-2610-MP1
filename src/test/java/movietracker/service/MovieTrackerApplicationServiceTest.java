@@ -104,6 +104,9 @@ class MovieTrackerApplicationServiceTest {
         assertTrue(application.removeTrackedMovie(550));
 
         assertTrue(application.getTrackedMovies().isEmpty());
+        assertTrue(application.getWatched().isEmpty());
+        assertTrue(application.getTrackedMovie(550).isEmpty());
+        assertTrue(storage.savedStates.getLast().isEmpty());
         assertEquals(4, storage.savedStates.size());
     }
 
@@ -167,6 +170,24 @@ class MovieTrackerApplicationServiceTest {
         assertEquals(List.of(watchlistMovie), application.getWatchlist());
         assertEquals(WatchStatus.WATCHLIST,
                 application.getTrackingStatus(550).orElseThrow());
+    }
+
+    @Test
+    void watchedRemovalFailure_propagatesAndRetainsRatedMovie() throws Exception {
+        TrackedMovie watchedMovie = tracked(FIGHT_CLUB, WatchStatus.WATCHED, 8);
+        FakeStorage storage = new FakeStorage(watchedMovie);
+        StorageException failure = new StorageException("simulated watched removal failure");
+        storage.saveFailure = failure;
+        MovieTrackerApplicationService application = application(
+                new StubTransport(200, "{}"), storage);
+
+        StorageException actual = assertThrows(
+                StorageException.class, () -> application.removeTrackedMovie(550));
+
+        assertSame(failure, actual);
+        assertEquals(List.of(watchedMovie), application.getWatched());
+        assertEquals(8, application.getTrackedMovie(550).orElseThrow()
+                .getPersonalRating().orElseThrow());
     }
 
     @Test

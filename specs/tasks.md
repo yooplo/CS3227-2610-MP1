@@ -136,7 +136,7 @@ without coordinating the TMDB client and local tracking service directly.
 - [x] Render persisted Watched movies.
 - [x] Clicking a Watched item opens detail view.
 - [x] Marking watched from Watchlist moves it between sections immediately.
-- [ ] Add remove action.
+- [x] Add remove action.
 
 **Covers:** FR-WATCHED, FR-DETAIL-03.
 

@@ -43,6 +43,10 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
 tasks.register('cleanReleaseJars') {
     group = 'distribution'
     description = 'Removes prior MP1 release JARs while preserving release/.gitkeep.'

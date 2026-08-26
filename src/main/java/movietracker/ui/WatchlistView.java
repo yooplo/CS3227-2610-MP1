@@ -114,7 +114,7 @@ final class WatchlistView extends VBox {
         }
 
         movieList.setDisable(true);
-        showOperationState("Removing " + trackedMovie.getMovie().getTitle() + "…", true, false);
+        showOperationState("Removing " + trackedMovie.getMovie().getTitle() + "...", true, false);
 
         Task<Boolean> removalTask = new Task<>() {
             @Override

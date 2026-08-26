@@ -136,7 +136,7 @@ final class SearchView extends VBox {
         };
         activeSearch = searchTask;
         setSearching(true);
-        showMessage("Searching TMDB…", "state-loading");
+        showMessage("Searching TMDB...", "state-loading");
 
         searchTask.setOnSucceeded(event -> {
             List<Movie> movies = searchTask.getValue();

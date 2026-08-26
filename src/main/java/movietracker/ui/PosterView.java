@@ -34,7 +34,7 @@ final class PosterView extends StackPane {
     }
 
     private void loadPoster(URI uri, Label placeholder, double width, double height) {
-        placeholder.setText("Loading poster…");
+        placeholder.setText("Loading poster...");
         Image image = new Image(uri.toString(), width, height, true, true, true);
         ImageView imageView = new ImageView(image);
         imageView.setFitWidth(width);

@@ -118,7 +118,7 @@ final class MovieDetailsView extends BorderPane {
         ProgressIndicator progress = new ProgressIndicator();
         progress.setMaxSize(42, 42);
         progress.getStyleClass().add("application-progress");
-        Label message = new Label("Loading details for " + selectedMovie.getTitle() + "…");
+        Label message = new Label("Loading details for " + selectedMovie.getTitle() + "...");
         message.getStyleClass().add("loading-message");
         VBox loading = new VBox(12, progress, message);
         loading.getStyleClass().add("details-state");
@@ -242,7 +242,7 @@ final class MovieDetailsView extends BorderPane {
         runTrackingMutation(
                 actions,
                 movie,
-                "Adding to Watchlist…",
+                "Adding to Watchlist...",
                 "Added to Watchlist.",
                 () -> applicationService.addToWatchlist(movie));
     }
@@ -257,7 +257,7 @@ final class MovieDetailsView extends BorderPane {
         runTrackingMutation(
                 actions,
                 movie,
-                "Marking as Watched…",
+                "Marking as Watched...",
                 "Marked as Watched.",
                 () -> applicationService.markWatched(movie));
     }
@@ -279,7 +279,7 @@ final class MovieDetailsView extends BorderPane {
             ratingSelector.getItems().add(rating);
         }
         ratingSelector.setPromptText("Choose "
-                + TrackedMovie.MINIMUM_PERSONAL_RATING + "–"
+                + TrackedMovie.MINIMUM_PERSONAL_RATING + "-"
                 + TrackedMovie.MAXIMUM_PERSONAL_RATING);
         if (currentRating.isPresent()) {
             ratingSelector.setValue(currentRating.getAsInt());
@@ -312,7 +312,7 @@ final class MovieDetailsView extends BorderPane {
         runTrackingMutation(
                 actions,
                 movie,
-                "Saving personal rating…",
+                "Saving personal rating...",
                 "Personal rating saved.",
                 () -> applicationService.setPersonalRating(movie.getTmdbId(), rating));
     }
@@ -321,7 +321,7 @@ final class MovieDetailsView extends BorderPane {
         runTrackingMutation(
                 actions,
                 movie,
-                "Clearing personal rating…",
+                "Clearing personal rating...",
                 "Personal rating cleared.",
                 () -> applicationService.setPersonalRating(movie.getTmdbId(), null));
     }

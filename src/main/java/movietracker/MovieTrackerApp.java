@@ -76,7 +76,7 @@ public final class MovieTrackerApp extends Application {
     private static void showStorageStartupFailure(Stage primaryStage) {
         Alert alert = new Alert(AlertType.ERROR);
         alert.initOwner(primaryStage);
-        alert.setTitle(APPLICATION_TITLE + " — Startup Error");
+        alert.setTitle(APPLICATION_TITLE + " - Startup Error");
         alert.setHeaderText("Movie Tracker could not start safely.");
         alert.setContentText(UiErrorMessages.storageStartupFailure());
         alert.showAndWait();

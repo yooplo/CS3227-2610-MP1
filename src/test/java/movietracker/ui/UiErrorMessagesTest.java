@@ -13,4 +13,13 @@ class UiErrorMessagesTest {
         assertEquals("The tracking change failed unexpectedly. Try again.",
                 UiErrorMessages.unexpectedTrackingFailure());
     }
+
+    @Test
+    void startupStorageFailureExplainsPreservationWithoutTechnicalDetails() {
+        assertEquals(
+                "Your locally tracked movie data could not be loaded. "
+                        + "The existing data file was left unchanged. Check that it is readable "
+                        + "and valid, then restart Movie Tracker.",
+                UiErrorMessages.storageStartupFailure());
+    }
 }

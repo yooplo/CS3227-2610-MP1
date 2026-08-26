@@ -4,14 +4,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
 import movietracker.api.TmdbClient;
 import movietracker.service.MovieTrackerApplicationService;
 import movietracker.service.MovieTrackerService;
 import movietracker.storage.LocalStorage;
+import movietracker.storage.Storage;
 import movietracker.storage.StorageException;
 import movietracker.ui.MainWindow;
+import movietracker.ui.UiErrorMessages;
 
 /**
  * JavaFX application entry point for Movie Tracker.
@@ -33,10 +38,16 @@ public final class MovieTrackerApp extends Application {
      * @param primaryStage the primary application window
      */
     @Override
-    public void start(Stage primaryStage) throws StorageException {
-        MovieTrackerService trackingService = new MovieTrackerService(new LocalStorage());
-        MovieTrackerApplicationService applicationService = new MovieTrackerApplicationService(
-                TmdbClient.fromEnvironment(), trackingService);
+    public void start(Stage primaryStage) {
+        MovieTrackerApplicationService applicationService;
+        try {
+            applicationService = createApplicationService(
+                    new LocalStorage(), TmdbClient.fromEnvironment());
+        } catch (StorageException exception) {
+            showStorageStartupFailure(primaryStage);
+            return;
+        }
+
         applicationExecutor = Executors.newSingleThreadExecutor(runnable -> Thread.ofPlatform()
                 .daemon(true)
                 .name("application-worker")
@@ -54,6 +65,22 @@ public final class MovieTrackerApp extends Application {
         primaryStage.setMinHeight(MINIMUM_HEIGHT);
         primaryStage.setResizable(true);
         primaryStage.show();
+    }
+
+    static MovieTrackerApplicationService createApplicationService(
+            Storage storage, TmdbClient tmdbClient) throws StorageException {
+        MovieTrackerService trackingService = new MovieTrackerService(storage);
+        return new MovieTrackerApplicationService(tmdbClient, trackingService);
+    }
+
+    private static void showStorageStartupFailure(Stage primaryStage) {
+        Alert alert = new Alert(AlertType.ERROR);
+        alert.initOwner(primaryStage);
+        alert.setTitle(APPLICATION_TITLE + " — Startup Error");
+        alert.setHeaderText("Movie Tracker could not start safely.");
+        alert.setContentText(UiErrorMessages.storageStartupFailure());
+        alert.showAndWait();
+        Platform.exit();
     }
 
     @Override

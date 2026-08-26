@@ -96,6 +96,46 @@ class LocalStorageTest {
     }
 
     @Test
+    void load_emptyFile_throwsStorageExceptionWithoutChangingFile() throws IOException {
+        Path dataFile = temporaryDirectory.resolve("movies.json");
+        Files.writeString(dataFile, "");
+        LocalStorage storage = new LocalStorage(dataFile);
+
+        assertThrows(StorageException.class, storage::load);
+
+        assertEquals("", Files.readString(dataFile));
+    }
+
+    @Test
+    void load_unsupportedVersion_throwsStorageExceptionWithoutChangingFile() throws IOException {
+        Path dataFile = temporaryDirectory.resolve("movies.json");
+        String unsupportedData = """
+                {
+                  "version": 2,
+                  "movies": []
+                }
+                """;
+        Files.writeString(dataFile, unsupportedData);
+        LocalStorage storage = new LocalStorage(dataFile);
+
+        StorageException exception = assertThrows(StorageException.class, storage::load);
+
+        assertTrue(exception.getMessage().contains("Unsupported storage version"));
+        assertEquals(unsupportedData, Files.readString(dataFile));
+    }
+
+    @Test
+    void load_dataPathIsDirectory_throwsStorageExceptionWithoutReplacingPath() throws IOException {
+        Path dataFile = temporaryDirectory.resolve("movies.json");
+        Files.createDirectory(dataFile);
+        LocalStorage storage = new LocalStorage(dataFile);
+
+        assertThrows(StorageException.class, storage::load);
+
+        assertTrue(Files.isDirectory(dataFile));
+    }
+
+    @Test
     void load_invalidDomainData_throwsStorageException() throws IOException {
         Path dataFile = temporaryDirectory.resolve("movies.json");
         Files.writeString(dataFile, """

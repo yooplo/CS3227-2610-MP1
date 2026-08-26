@@ -154,7 +154,7 @@ without coordinating the TMDB client and local tracking service directly.
 - [ ] Review code against SE-EDU Java coding standard.
 - [ ] Add Checkstyle if practical/required.
 - [ ] Add Java assertions only for genuine internal assumptions.
-- [ ] Improve exception messages and edge cases.
+- [x] Improve exception messages and edge cases.
 - [ ] Ensure no blocking network work runs on JavaFX thread.
 - [ ] Ensure no token appears in Git history/current tracked files.
 - [ ] Run all unit tests.

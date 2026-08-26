@@ -205,6 +205,12 @@ behavior. Basic structural styling lives in `movietracker/css/app.css`.
 `MovieTrackerApp` is the composition root: it creates `LocalStorage`,
 `MovieTrackerService`, `TmdbClient`, `MovieTrackerApplicationService`, and the
 application executor, then injects the application service and executor into the UI.
+If existing local data cannot be loaded, startup shows a blocking, non-technical
+error and exits cleanly without creating an empty tracking service. This preserves
+the original file and prevents later mutations from overwriting corrupted,
+unsupported, or unreadable data. A missing data file remains a normal empty first
+run, while TMDB configuration remains request-time so a missing token does not
+prevent the main window from opening.
 `SearchView` uses a JavaFX `Task` on that executor so TMDB work never blocks the
 JavaFX Application Thread. Task completion handlers update controls on the
 JavaFX thread. Runtime TMDB configuration is resolved when a request begins, so

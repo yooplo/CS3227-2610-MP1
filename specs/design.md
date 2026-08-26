@@ -36,6 +36,7 @@ src/main/java/
     │   ├── TrackedMovie.java
     │   └── WatchStatus.java
     ├── service/
+    │   ├── MovieTrackerApplicationService.java
     │   └── MovieTrackerService.java
     ├── api/
     │   ├── TmdbClient.java
@@ -123,9 +124,9 @@ WATCHLIST
 WATCHED
 ```
 
-### `MovieTrackerService`
+### `MovieTrackerApplicationService`
 
-Central use-case layer. Suggested operations:
+Application-facing coordinator used by future JavaFX controllers. It exposes:
 
 - `searchMovies(query)`
 - `getMovieDetails(tmdbId)`
@@ -136,7 +137,17 @@ Central use-case layer. Suggested operations:
 - `removeTrackedMovie(tmdbId)`
 - `setPersonalRating(tmdbId, rating)`
 
-This layer enforces invariants such as “a movie cannot be in both Watchlist and Watched”.
+It delegates remote lookup to `TmdbClient` and local operations to
+`MovieTrackerService`. It remains synchronous; the JavaFX layer must arrange
+background execution for remote calls. `TmdbException` and `StorageException`
+pass through unchanged so UI code can translate them without losing structured
+error information or underlying causes.
+
+### `MovieTrackerService`
+
+Owns the in-memory tracked-movie collection, enforces tracking invariants such
+as “a movie cannot be in both Watchlist and Watched”, and coordinates persistence
+after successful mutations. It does not perform TMDB lookup or depend on JavaFX.
 
 ### `TmdbClient`
 

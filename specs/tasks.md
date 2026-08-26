@@ -78,6 +78,16 @@ Use requirement IDs from `requirements.md` in commit/PR notes where useful.
 
 **Covers:** FR-WATCHLIST, FR-WATCHED.
 
+## Phase 5.5 — Application coordination
+
+- [x] Add one application-facing API for TMDB lookup and local tracking.
+- [x] Delegate lookup and tracking without duplicating client or business rules.
+- [x] Preserve structured API and storage failures across the coordination layer.
+- [x] Add offline coordination-layer unit tests.
+
+**Done when:** future JavaFX controllers can use one injected application service
+without coordinating the TMDB client and local tracking service directly.
+
 ## Phase 6 — Main JavaFX shell
 
 - [ ] Build the main window.

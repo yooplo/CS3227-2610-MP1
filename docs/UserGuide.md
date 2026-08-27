@@ -8,9 +8,18 @@ Movie Tracker is a compact desktop application for finding movies through TMDB a
 - The current `MovieTracker.jar` release is packaged for **Windows x86-64** and is not universal. Movie Tracker has been runtime smoke-tested on Windows, macOS, and Linux, but each operating system still requires JavaFX libraries and native binaries for its own platform.
 - A TMDB API Read Access Token is required for **Search and Movie Details only**. The application still starts without a token, and locally saved Watchlist and Watched entries remain available.
 
-## Configure TMDB on Windows
+## Obtain a TMDB API Read Access Token
 
-Obtain an API Read Access Token from your own TMDB account. Never put the token in this repository or share it in screenshots.
+1. Create or sign in to your account at [TMDB](https://www.themoviedb.org/).
+2. On a desktop browser, open **Account Settings → API**, or go directly to [TMDB API settings](https://www.themoviedb.org/settings/api).
+3. Follow TMDB's API registration process and accept its terms of use.
+4. Return to the API settings page and copy the value labelled **API Read Access Token**.
+
+Movie Tracker uses this Read Access Token as a Bearer token. Do not use the shorter **API Key (v3 auth)** value. For more information, see TMDB's [Getting Started](https://developer.themoviedb.org/docs/getting-started) and [Application Authentication](https://developer.themoviedb.org/docs/authentication-application) guides.
+
+Never put the token in this repository or share it in screenshots.
+
+## Configure TMDB on Windows
 
 For the current PowerShell session, replace the placeholder with your token:
 

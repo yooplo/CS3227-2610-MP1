@@ -117,3 +117,7 @@ target system, or explicitly select a supported OpenJFX target such as:
 Each target must be smoke-tested on its matching operating system and CPU before
 release. The committed `MovieTracker.jar` is the artifact built and tested for
 the submission environment; rebuilding it replaces that artifact.
+
+Runtime smoke testing has been completed successfully on Windows, macOS, and
+Linux. This verification does not make any single platform-specific JAR
+universal.

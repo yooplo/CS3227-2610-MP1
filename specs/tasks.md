@@ -165,8 +165,8 @@ without coordinating the TMDB client and local tracking service directly.
 
 - [x] Confirm Java/JavaFX packaging strategy supports Windows.
 - [x] Smoke-test on Windows.
-- [ ] Smoke-test on Linux.
-- [ ] Smoke-test on macOS.
+- [x] Smoke-test on Linux.
+- [x] Smoke-test on macOS.
 - [x] Build the latest distributable JAR with required libraries.
 - [x] Place the submission JAR in `release/`.
 - [x] Verify the JAR starts from a clean folder/environment as required by the assignment.

@@ -27,3 +27,7 @@ The release was tested, built, inspected for classes/resources and accidental fi
 - `12435d8` — `Update user and developer documentation`
 - `8b60a25` — `Fix-UI-text-encoding`
 - `d3aff1c` — `Add TMDB attribution`
+
+## Later cross-platform verification
+
+After the release and documentation work described above, runtime smoke testing was completed successfully on Windows, macOS, and Linux. JavaFX packaging remains platform-specific: this verification does not make the checked-in Windows x86-64 JAR universal, and each target still requires matching JavaFX native libraries.

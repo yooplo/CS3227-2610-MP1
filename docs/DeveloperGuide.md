@@ -170,7 +170,7 @@ Run the suite with:
 
 The Gradle `releaseJar` task runs tests, removes stale `release/*.jar` files, and builds `release/MovieTracker.jar`. It is an executable fat JAR whose manifest uses `movietracker.Launcher`; it includes application classes/resources, Jackson, and JavaFX runtime dependencies.
 
-JavaFX native libraries are platform- and architecture-specific. Consequently, one fat JAR is not genuinely universal. The checked-in release artifact is currently **Windows x86-64 only**. The build accepts `-PjavafxPlatform=win`, `linux`, `linux-aarch64`, `mac`, or `mac-aarch64`, but artifacts must be separately built and smoke-tested on their matching systems. Linux and macOS releases are not currently verified, so no cross-platform runtime claim is made for the checked-in JAR.
+JavaFX native libraries are platform- and architecture-specific. Consequently, one fat JAR is not genuinely universal. The checked-in release artifact is currently **Windows x86-64 only**. The build accepts `-PjavafxPlatform=win`, `linux`, `linux-aarch64`, `mac`, or `mac-aarch64`, but artifacts must be separately built for their matching systems. Runtime smoke testing has been completed on Windows, macOS, and Linux. This verification does not make the checked-in Windows x86-64 JAR universal; each target still requires matching JavaFX native libraries.
 
 The packaged application continues to read `TMDB_API_TOKEN` from its process environment and writes `data/movies.json` relative to its launch working directory. Tokens, source files, tests, fixtures, and local data are not intentionally packaged in the JAR.
 

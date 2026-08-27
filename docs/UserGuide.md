@@ -5,7 +5,7 @@ Movie Tracker is a compact desktop application for finding movies through TMDB a
 ## Before you start
 
 - Install Java 25 and confirm that `java --version` reports version 25.
-- The current `MovieTracker.jar` release is packaged for **Windows x86-64**. It is not a universal JAR; Linux and macOS artifacts have not yet been built and verified.
+- The current `MovieTracker.jar` release is packaged for **Windows x86-64** and is not universal. Movie Tracker has been runtime smoke-tested on Windows, macOS, and Linux, but each operating system still requires JavaFX libraries and native binaries for its own platform.
 - A TMDB API Read Access Token is required for **Search and Movie Details only**. The application still starts without a token, and locally saved Watchlist and Watched entries remain available.
 
 ## Configure TMDB on Windows

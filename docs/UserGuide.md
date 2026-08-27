@@ -40,7 +40,7 @@ The main window opens with Search, Watchlist, Watched, and About navigation on t
 2. Enter a movie title and press Enter or select **Search**.
 3. Select a result to open Movie Details.
 
-Search results show the movie title and release year when available. A blank query is rejected locally and does not contact TMDB. If there are no matches, Movie Tracker displays a no-results message. Search-result poster thumbnails are not included in the current release.
+Search results show a poster thumbnail, movie title, and release year when available. A missing or failed poster uses a placeholder without preventing the result from opening. A blank query is rejected locally and does not contact TMDB. If there are no matches, Movie Tracker displays a no-results message.
 
 ### Movie Details
 

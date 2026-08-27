@@ -213,6 +213,15 @@
     -fx-padding: 13px 15px;
 }
 
+.search-result-row {
+    -fx-padding: 9px 12px;
+}
+
+.poster-thumbnail .poster-placeholder {
+    -fx-padding: 4px;
+    -fx-font-size: 9px;
+}
+
 .movie-title {
     -fx-font-size: 16px;
     -fx-font-weight: bold;

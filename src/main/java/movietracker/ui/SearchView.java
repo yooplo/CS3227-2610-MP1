@@ -31,6 +31,9 @@ import movietracker.service.MovieTrackerApplicationService;
  */
 final class SearchView extends VBox {
 
+    private static final double POSTER_WIDTH = 48;
+    private static final double POSTER_HEIGHT = 72;
+
     private final MovieTrackerApplicationService applicationService;
     private final Executor executor;
     private final Consumer<Movie> movieSelectionHandler;
@@ -238,9 +241,17 @@ final class SearchView extends VBox {
                     .orElse("Release date unavailable"));
             release.getStyleClass().add("movie-release");
 
-            VBox content = new VBox(4, title, release);
-            content.getStyleClass().add("movie-result");
-            setGraphic(content);
+            VBox text = new VBox(4, title, release);
+            HBox.setHgrow(text, Priority.ALWAYS);
+
+            PosterView poster = new PosterView(
+                    movie.getPosterPath(), POSTER_WIDTH, POSTER_HEIGHT);
+            poster.getStyleClass().add("poster-thumbnail");
+
+            HBox row = new HBox(12, poster, text);
+            row.getStyleClass().addAll("movie-result", "search-result-row");
+            row.setAlignment(Pos.CENTER_LEFT);
+            setGraphic(row);
             setText(null);
         }
 

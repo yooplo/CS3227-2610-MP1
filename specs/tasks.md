@@ -106,7 +106,7 @@ without coordinating the TMDB client and local tracking service directly.
 - [x] Execute TMDB request off the JavaFX Application Thread.
 - [x] Show loading state.
 - [x] Render result rows/cards.
-- [ ] Render poster or placeholder.
+- [x] Render poster or placeholder.
 - [x] Add empty-results state.
 - [x] Add network/API error state.
 

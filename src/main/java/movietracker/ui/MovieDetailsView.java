@@ -41,7 +41,6 @@ final class MovieDetailsView extends BorderPane {
     private final Movie selectedMovie;
     private final MovieTrackerApplicationService applicationService;
     private final Executor executor;
-    private final Runnable backAction;
     private final StackPane contentArea = new StackPane();
 
     private Task<MovieDetails> activeLoad;
@@ -56,14 +55,14 @@ final class MovieDetailsView extends BorderPane {
         this.applicationService = Objects.requireNonNull(applicationService, "applicationService");
         this.executor = Objects.requireNonNull(executor, "executor");
         Objects.requireNonNull(backDestination, "backDestination");
-        this.backAction = Objects.requireNonNull(backAction, "backAction");
+        Runnable checkedBackAction = Objects.requireNonNull(backAction, "backAction");
 
         getStyleClass().add("details-view");
         setPadding(new Insets(20, 28, 28, 28));
 
         Button backButton = new Button("Back to " + backDestination);
         backButton.getStyleClass().add("back-button");
-        backButton.setOnAction(event -> backAction.run());
+        backButton.setOnAction(event -> checkedBackAction.run());
         setTop(backButton);
         BorderPane.setMargin(backButton, new Insets(0, 0, 16, 0));
 

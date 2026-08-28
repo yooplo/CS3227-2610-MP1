@@ -169,12 +169,10 @@ final class WatchlistView extends VBox {
 
     private static final class WatchlistCell extends ListCell<TrackedMovie> {
 
-        private final Consumer<Movie> selectionHandler;
         private final Consumer<TrackedMovie> removalHandler;
 
         private WatchlistCell(Consumer<Movie> selectionHandler,
                               Consumer<TrackedMovie> removalHandler) {
-            this.selectionHandler = selectionHandler;
             this.removalHandler = removalHandler;
             setOnMouseClicked(event -> {
                 if (event.getButton() == MouseButton.PRIMARY

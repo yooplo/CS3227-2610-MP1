@@ -213,10 +213,7 @@ final class SearchView extends VBox {
 
     private static final class MovieResultCell extends ListCell<Movie> {
 
-        private final Consumer<Movie> selectionHandler;
-
         private MovieResultCell(Consumer<Movie> selectionHandler) {
-            this.selectionHandler = selectionHandler;
             setOnMouseClicked(event -> {
                 if (event.getButton() == MouseButton.PRIMARY && !isEmpty()) {
                     selectionHandler.accept(getItem());
